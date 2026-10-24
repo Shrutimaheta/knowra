@@ -10,6 +10,7 @@ data/
 *.pyc
 .test-*/
 dist/
+output/
 .neon
 .ruff_cache/
 tmp/
@@ -35,3 +36,4 @@ docs/production-status.md
 docs/performance.md
 evals/*.json
 !evals/retrieval.json
+!evals/demo-corpus.json

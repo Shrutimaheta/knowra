@@ -16,6 +16,8 @@ from app.demo import NOTICE as DEMO_NOTICE
 from app.demo import bootstrap as bootstrap_demo
 from app.demo import enabled as demo_enabled
 from app.demo import permits as demo_permits
+from app.demo_catalog import DIRECTORY as BUSINESS_DIRECTORY
+from app.demo_catalog import DOCUMENTS as BUSINESS_DOCUMENTS
 from app.embeddings import model_name, query_vector, warmup
 from app.extraction import visual_file
 from app.knowledge_map import router as knowledge_map_router
@@ -1181,6 +1183,19 @@ def seed(background: BackgroundTasks, user=Depends(admin)):
             version = enqueue(c, document_id, title, content.encode(), [content], 1)
             if os.getenv("EAGER_INGESTION", "false") == "true":
                 background.add_task(run_once, version)
+            created += 1
+        for title, category, filenames in BUSINESS_DOCUMENTS:
+            if c.execute("SELECT id FROM documents WHERE org=? AND title=?", (user["org"], title)).fetchone():
+                continue
+            document_id = uid()
+            c.execute(
+                "INSERT INTO documents (id,org,owner,title,category,visibility,status,content,created,version) VALUES (?,?,?,?,?,?,'queued','',?,?)",
+                (document_id, user["org"], user["id"], title, category, "workspace", now(), len(filenames)),
+            )
+            for number, filename in enumerate(filenames, 1):
+                version = enqueue(c, document_id, filename, (BUSINESS_DIRECTORY / filename).read_bytes(), [], number)
+                if os.getenv("EAGER_INGESTION", "false") == "true":
+                    background.add_task(run_once, version)
             created += 1
         audit(c, user, "demo.seeded", str(created))
     return {"created": created}

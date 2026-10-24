@@ -60,6 +60,10 @@ python -m pip install -r apps/api/requirements-semantic.txt
 
 Set `EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2` and temporarily `EMBEDDING_ALLOW_DOWNLOAD=true` for the first download. Then disable downloads. Index or reindex documents after enabling the model. Local embeddings use a 384-dimensional English-focused model; keyword search remains the lightweight default.
 
+## Realistic fictional demo documents
+
+Eight polished PDFs (24 pages) cover employee policies, hybrid work, expenses, security, employee/customer onboarding and an Atlas requirements change. **Load sample data** imports them, preserving the two Atlas baselines as versions of one document. See the [document guide and question flow](docs/demo-documents.md). The corpus includes 20 source-page checks and explicit missing-evidence questions; it is not a general answer-accuracy benchmark.
+
 ## Architecture
 
 ```mermaid

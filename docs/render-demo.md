@@ -4,7 +4,7 @@ This profile is a free-tier public demonstration, not the full production deploy
 
 ## Included and limited
 
-- Includes fictional 2025/2026 handbook PDFs, a policy with two immutable versions, and a generated receipt image with explicitly pre-indexed text.
+- Includes 11 fictional document entries: the existing two-year handbook/policy examples and labelled receipt, plus six detailed business guides and two immutable Atlas requirements versions. The eight new PDFs total 24 pages; see demo-documents.md for the question flow.
 - Supports keyword retrieval, Gemini cited answers, source previews, comparisons, conflict reviews and Knowledge Map links.
 - No local semantic model, live OCR, public file uploads, signup, invitations or account administration. The memory-limited image omits PyTorch and the OCR runtime. Image extraction is labelled as a pre-indexed sample; it does not pretend to perform live OCR.
 - Login is a shared reviewer account. Everyone using it can see its conversations and reviews. Do not enter private data. Conversations are capped at 30 and stored messages at 300; delete old conversations to free capacity. AI provider quotas remain applicable.
@@ -22,7 +22,7 @@ This profile is a free-tier public demonstration, not the full production deploy
 
 ## Acceptance checks
 
-Open the library and all four sources. Ask “How many annual leave days are allowed in 2026?” and open its citation. Compare Workplace policy versions 1/2. Scan Handbook 2025/2026 for possible conflicts and save a personal decision. Inspect the receipt and its labelled extracted text. Open Knowledge Map, then create an answer and reopen its source link. Restart the service and verify conversations/sources still exist in Neon. Confirm signup, uploads, document deletion and invitations return 403.
+Open the library and all 11 document entries. Ask “How many annual leave days are allowed in 2026?” and open its citation. Compare Workplace policy versions 1/2. Scan Handbook 2025/2026 for possible conflicts and save a personal decision. Inspect the receipt and its labelled extracted text. Open Knowledge Map, then create an answer and reopen its source link. Restart the service and verify conversations/sources still exist in Neon. Confirm signup, uploads, document deletion and invitations return 403.
 
 Docker is unavailable on the development computer: the 512 MB container profile and Neon connectivity still need verification on Render/CI. A successful local test does not prove memory capacity or external-provider uptime. If the free instance runs out of memory, keep it offline while adjusting the demo; do not silently upgrade to a paid plan or describe the full production stack as verified.
 

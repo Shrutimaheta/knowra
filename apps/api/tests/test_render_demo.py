@@ -21,7 +21,7 @@ def test_demo_bootstrap_is_idempotent_and_contains_only_curated_sources(client, 
     prepare(client, monkeypatch)
     bootstrap()
     documents = client.get("/api/v1/documents").json()
-    assert len(documents) == 4
+    assert len(documents) == 11
     assert all(doc["status"] == "ready" for doc in documents)
     policy = identity("Workplace policy.pdf")
     versions = client.get(f"/api/v1/documents/{policy}/versions").json()
@@ -102,4 +102,4 @@ def test_render_bundle_has_no_private_database_or_environment(tmp_path):
         assert "render.yaml" in names
         assert "apps/api/Dockerfile.demo" in names
         assert not any(".env" in Path(name).name or "/data/" in name or name.endswith((".db", ".gz")) for name in names)
-        assert sum(name.endswith(".pdf") for name in names) == 2
+        assert sum(name.endswith(".pdf") for name in names) == 10

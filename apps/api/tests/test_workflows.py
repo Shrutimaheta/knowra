@@ -154,7 +154,7 @@ def test_file_validation_and_origin(client):
 
 def test_seed_and_no_evidence(client):
     register(client)
-    assert client.post("/api/v1/demo/seed").json()["created"] == 4
+    assert client.post("/api/v1/demo/seed").json()["created"] == 11
     assert client.post("/api/v1/demo/seed").json()["created"] == 0
     conversation = client.post("/api/v1/conversations").json()["id"]
     answer = client.post(

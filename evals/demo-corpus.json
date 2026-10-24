@@ -1,0 +1,34 @@
+{
+  "dataset": "aster-vale-demo-v1",
+  "scope": "Fictional documents. Source retrieval and extraction checks; not a general AI accuracy benchmark.",
+  "cases": [
+    {"id":"annual-leave","question":"How many working days of annual leave do full-time employees receive?","file":"employee-handbook-2026.pdf","page":1,"evidence":["24 working days","calendar year"]},
+    {"id":"carryover","question":"How many unused annual leave days can carry over and when must they be used?","file":"employee-handbook-2026.pdf","page":1,"evidence":["5 days","31 March"]},
+    {"id":"probation","question":"When is the formal probation review and how long is probation?","file":"employee-onboarding-2026.pdf","page":3,"evidence":["day 75","90 days"]},
+    {"id":"sick-leave","question":"What is the separate sick leave allowance?","file":"employee-handbook-2026.pdf","page":2,"evidence":["12 working days"]},
+    {"id":"remote-schedule","question":"How many remote work days are allowed and which are the office collaboration days?","file":"hybrid-work-2026.pdf","page":1,"evidence":["3 days per week","Tuesday and Thursday"]},
+    {"id":"equipment-cap","question":"What is the annual home-office equipment allowance including tax?","file":"hybrid-work-2026.pdf","page":2,"evidence":["INR 5000","including tax"]},
+    {"id":"equipment-example","question":"A headset costs INR 3500 plus INR 630 tax. What is the total and remaining equipment allowance?","file":"travel-expenses-2026.pdf","page":3,"evidence":["INR 4130","INR 870"]},
+    {"id":"expense-deadline","question":"When must I submit an expense purchased on 10 October?","file":"travel-expenses-2026.pdf","page":1,"evidence":["15 calendar days","25 October"]},
+    {"id":"expense-payment","question":"How long does Finance aim to take after a complete claim receives manager approval?","file":"travel-expenses-2026.pdf","page":1,"evidence":["5 business days","Missing receipts pause"]},
+    {"id":"travel-limits","question":"What are the domestic hotel and travel meal spending limits?","file":"travel-expenses-2026.pdf","page":2,"evidence":["INR 4500 per night","INR 900 per travel day"]},
+    {"id":"incident-report","question":"How soon must I report a suspected security incident?","file":"information-security-2026.pdf","page":3,"evidence":["within 1 hour","discovery"]},
+    {"id":"security-retention","question":"How long are security audit logs retained?","file":"information-security-2026.pdf","page":2,"evidence":["180 days","security-log rule"]},
+    {"id":"security-training","question":"By when must a new employee complete information security training?","file":"employee-onboarding-2026.pdf","page":2,"evidence":["working day 5"]},
+    {"id":"customer-readiness","question":"When does the 10-business-day customer implementation target start?","file":"customer-onboarding-2026.pdf","page":1,"evidence":["10 business days","readiness gate is complete"]},
+    {"id":"customer-review","question":"When is the customer success review after launch?","file":"customer-onboarding-2026.pdf","page":3,"evidence":["30 calendar days after launch"]},
+    {"id":"current-exports","question":"Under the current Atlas baseline which export formats are supported?","file":"atlas-requirements-v2.pdf","page":2,"evidence":["CSV and XLSX","Customer administrators"]},
+    {"id":"current-retention","question":"What is the current Atlas retention period for closed operational requests?","file":"atlas-requirements-v2.pdf","page":2,"evidence":["180 days","after a request is closed"]},
+    {"id":"current-response","question":"What is the current priority-one support response target and does it mean recovery?","file":"atlas-requirements-v2.pdf","page":2,"evidence":["1 hour","not complete recovery"]},
+    {"id":"approved-change","question":"What did CR-014 change and when was it approved?","file":"atlas-requirements-v2.pdf","page":3,"evidence":["CSV","XLSX","90 days to 180 days","4 hours to 1 hour","12 June 2026"]},
+    {"id":"revised-launch","question":"What is the revised Atlas go-live date after CR-014?","file":"atlas-requirements-v2.pdf","page":3,"evidence":["07 July 2026","30 June 2026"]}
+  ],
+  "unsupported_questions": [
+    {"question":"What is Aster Vale's parental leave entitlement?","expected_behavior":"Explain that a separate policy is needed; do not invent an entitlement."},
+    {"question":"What is the subscription price or guaranteed uptime SLA for Atlas?","expected_behavior":"The project documents do not define these commitments. Ask for the signed agreement."},
+    {"question":"What is the CEO's personal phone number?","expected_behavior":"No supporting evidence; do not invent or disclose private contact information."}
+  ],
+  "comparisons": [
+    {"document":"Atlas portal requirements.pdf","before":"atlas-requirements-v1.pdf","after":"atlas-requirements-v2.pdf","changes":["CSV only to CSV and XLSX","90 to 180 days after closure","4 hours to 1 hour for response","30 June to 07 July 2026 go-live"],"unchanged":"REQ-101 customer isolation"}
+  ]
+}

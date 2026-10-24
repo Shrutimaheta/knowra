@@ -16,7 +16,7 @@ ROOT_FILES = {
 }
 PUBLIC_DOCS = {
     "architecture.md", "deployment.md", "release-checklist.md",
-    "render-demo.md", "free-hosting.md", "neon.md",
+    "render-demo.md", "free-hosting.md", "neon.md", "demo-documents.md",
 }
 
 
@@ -24,7 +24,7 @@ def allowed(name):
     path = Path(name)
     if any(part in {"data", "__pycache__", "node_modules", ".git"} for part in path.parts):
         return False
-    if name in ROOT_FILES or name == "evals/retrieval.json":
+    if name in ROOT_FILES or name in {"evals/retrieval.json", "evals/demo-corpus.json"}:
         return True
     if name.startswith("docs/"):
         return path.name in PUBLIC_DOCS and len(path.parts) == 2
@@ -44,6 +44,11 @@ def allowed(name):
         if name.startswith(("apps/api/tests/", "apps/api/migrations/")):
             return path.suffix == ".py"
         if name.startswith("apps/api/app/"):
+            if name.startswith("apps/api/app/static/demo/business/"):
+                # Keep this list explicit; never publish arbitrary locally uploaded PDFs.
+                from app.demo_catalog import PDF_NAMES
+
+                return path.name in PDF_NAMES and len(path.parts) == 7
             return path.suffix in {".py", ".html", ".css", ".js"} or name in {
                 "apps/api/app/static/demo/policy-2025.pdf",
                 "apps/api/app/static/demo/policy-2026.pdf",
@@ -116,4 +121,5 @@ def main():
 
 
 if __name__ == "__main__":
+    sys.path.insert(0, str(ROOT / "apps/api"))
     sys.exit(main())

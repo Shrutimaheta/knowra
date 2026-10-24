@@ -9,6 +9,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import NAMESPACE_URL, uuid5
 
+from app.demo_catalog import DIRECTORY as BUSINESS_DIRECTORY
+from app.demo_catalog import DOCUMENTS as BUSINESS_DOCUMENTS
 from app.rag import chunk_pages
 from app.security import password_hash, verify_password
 from app.store import db
@@ -62,12 +64,14 @@ def bootstrap():
             c.execute("INSERT INTO users VALUES (?,?,?,?,?,?)", (account, email, "Demo reviewer", password_hash(password), org, "viewer"))
         directory = Path(__file__).parent / "static/demo"
         sources = [(directory / f"policy-{year}.pdf").read_bytes() for year in (2025, 2026)]
-        fixtures = [("Handbook 2025.pdf", [sources[0]]), ("Handbook 2026.pdf", [sources[1]]), ("Workplace policy.pdf", sources)]
-        for title, originals in fixtures:
+        fixtures = [("Handbook 2025.pdf", "People", [sources[0]]), ("Handbook 2026.pdf", "People", [sources[1]]), ("Workplace policy.pdf", "People", sources)]
+        fixtures += [(title, category, [(BUSINESS_DIRECTORY / name).read_bytes() for name in versions])
+                     for title, category, versions in BUSINESS_DOCUMENTS]
+        for title, category, originals in fixtures:
             document = identity(title)
             if c.execute("SELECT id FROM documents WHERE id=?", (document,)).fetchone():
                 continue
-            c.execute("INSERT INTO documents (id,org,owner,title,category,visibility,status,content,created,version) VALUES (?,?,?,?,?,?,'ready','',?,?)", (document, org, account, title, "People", "workspace", stamp, len(originals)))
+            c.execute("INSERT INTO documents (id,org,owner,title,category,visibility,status,content,created,version) VALUES (?,?,?,?,?,?,'ready','',?,?)", (document, org, account, title, category, "workspace", stamp, len(originals)))
             for number, original in enumerate(originals, 1):
                 with pymupdf.open(stream=original, filetype="pdf") as pdf:
                     pages = [page.get_text(sort=True) for page in pdf]
