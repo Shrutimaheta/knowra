@@ -832,8 +832,6 @@ async function initializeApp() {
       if (existing.data?.token) await post("/auth/neon", { token: existing.data.token });
     }
     if (config.demo) {
-      $("#demo-notice").textContent = config.notice;
-      $("#demo-notice").classList.remove("hidden");
       if (config.public_dashboard) {
         publicDemo = true;
         await enterPublicDemo();
