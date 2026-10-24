@@ -1,0 +1,30 @@
+# Requires the base and production files. No service here publishes a host port.
+services:
+  api:
+    environment:
+      BACKUP_SUCCESS_FILE: /backups/last-success
+      OPS_DISK_PATH: /backups
+    volumes: ['encrypted-backups:/backups:ro']
+  backup:
+    build: ./infrastructure/backup
+    environment:
+      PGHOST: db
+      PGUSER: knowra_migrator
+      PGDATABASE: knowra
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      BACKUP_RECIPIENT: ${BACKUP_RECIPIENT:?Set an age public backup recipient}
+    volumes: ['encrypted-backups:/backups']
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    healthcheck:
+      test: ['CMD-SHELL', 'test -f /backups/last-success && test $$(( $$(date +%s) - $$(cat /backups/last-success) )) -lt 93600']
+      interval: 5m
+      timeout: 5s
+      retries: 1
+      start_period: 10m
+volumes:
+  encrypted-backups:

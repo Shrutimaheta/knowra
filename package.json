@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1156.0",
+    "@neon/config": "^1.9.3",
+    "@neon/env": "^1.6.4",
+    "@neondatabase/auth": "^0.6.0-beta",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/pg": "^8.23.1",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.9.3"
+  },
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "python scripts/start.py",
+    "test": "python -m pytest apps/api/tests -q",
+    "neon:deploy": "python scripts/deploy_neon.py"
+  }
+}

@@ -1,0 +1,8 @@
+[
+  {"id":"leave","query":"How much annual leave is allowed?","expected":"leave","text":"Employees receive 24 days of annual leave per year."},
+  {"id":"vacation","query":"What is my vacation entitlement?","expected":"leave"},
+  {"id":"probation","query":"How long is the trial period for new hires?","expected":"probation","text":"New employees complete a 90-day probation period."},
+  {"id":"remote","query":"Can staff do their jobs from home?","expected":"remote","text":"Remote work is allowed three days each week with manager approval."},
+  {"id":"security","query":"What should I do if there is a cybersecurity breach?","expected":"security","text":"Report security incidents to the security team within one hour."},
+  {"id":"onboarding","query":"How do we welcome a new customer?","expected":"onboarding","text":"Customer onboarding starts with a discovery meeting and a requirements review."}
+]

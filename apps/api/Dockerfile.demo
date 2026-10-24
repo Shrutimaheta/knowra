@@ -1,0 +1,13 @@
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /code
+# No PyTorch, sentence-transformers or runtime OCR engine in the 512 MB demo.
+COPY requirements-demo.txt ./
+RUN pip install --no-cache-dir -r requirements-demo.txt
+COPY app ./app
+COPY migrations ./migrations
+COPY alembic.ini ./
+RUN useradd --uid 10001 --create-home knowra
+USER knowra
+EXPOSE 8000
+CMD ["python", "-m", "app.render_demo"]

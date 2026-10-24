@@ -1,0 +1,105 @@
+services:
+  api:
+    ports: !reset []
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    pids_limit: 256
+    read_only: true
+    tmpfs: ['/tmp:size=64m,uid=10001,gid=10001,mode=1770']
+    networks: [default, parsing]
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    environment:
+      APP_ENV: production
+      PUBLIC_URL: https://${DOMAIN:?Set DOMAIN for HTTPS deployment}
+      COOKIE_SECURE: 'true'
+      CLAMAV_HOST: clamav
+      PARSER_URL: http://parser:8001
+    depends_on:
+      parser:
+        condition: service_healthy
+      clamav:
+        condition: service_healthy
+  worker:
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    pids_limit: 256
+    read_only: true
+    tmpfs: ['/tmp:size=64m,uid=10001,gid=10001,mode=1770']
+    networks: [default, parsing]
+    environment:
+      APP_ENV: production
+      PUBLIC_URL: https://${DOMAIN:?Set DOMAIN for HTTPS deployment}
+      COOKIE_SECURE: 'true'
+      EMBEDDED_WORKER: 'false'
+      CLAMAV_HOST: clamav
+      PARSER_URL: http://parser:8001
+      WORKER_HEARTBEAT: /tmp/worker-heartbeat
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import pathlib,time; p=pathlib.Path('/tmp/worker-heartbeat'); assert p.exists() and time.time()-p.stat().st_mtime<600"]
+      interval: 30s
+      timeout: 5s
+      retries: 2
+      start_period: 120s
+    depends_on:
+      parser:
+        condition: service_healthy
+      clamav:
+        condition: service_healthy
+  parser:
+    build:
+      context: ./apps/api
+      args:
+        INSTALL_SEMANTIC: 'false'
+    command: ['uvicorn', 'app.parser_service:app', '--host', '0.0.0.0', '--port', '8001', '--no-access-log']
+    environment:
+      OCR_MAX_PAGES: ${OCR_MAX_PAGES:-50}
+    networks: [parsing]
+    read_only: true
+    tmpfs: ['/tmp:size=128m,uid=10001,gid=10001,mode=1770']
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    mem_limit: 2g
+    cpus: 1.0
+    pids_limit: 128
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  clamav:
+    image: clamav/clamav:stable
+    volumes: ['clamav-data:/var/lib/clamav']
+    mem_limit: 2g
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'clamdscan', '--ping', '1']
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 180s
+  proxy:
+    image: caddy:2
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./infrastructure/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  caddy-data:
+  caddy-config:
+  clamav-data:
+networks:
+  parsing:
+    internal: true

@@ -1,0 +1,10 @@
+[Unit]
+Description=Check Knowra every fifteen minutes
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=15min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,8 @@
+[Unit]
+Description=Check Knowra containers, queue and backup freshness
+OnFailure=knowra-alert.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/knowra
+ExecStart=/usr/bin/python3 /opt/knowra/scripts/check_deployment.py

@@ -1,0 +1,9 @@
+[Unit]
+Description=Notify the configured Knowra operator after a failed check
+StartLimitIntervalSec=1h
+StartLimitBurst=1
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/knowra
+ExecStart=/usr/bin/docker compose -f compose.yaml -f compose.production.yaml -f compose.operations.yaml exec -T api python -m app.operations --alert

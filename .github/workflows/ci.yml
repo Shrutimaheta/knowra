@@ -1,0 +1,106 @@
+name: Verify
+on: [push, pull_request]
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  sqlite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: pip install -r apps/api/requirements-dev.txt
+      - run: npm ci
+      - run: npm run build
+      - run: python scripts/check_publication.py
+      - run: python -m ruff check apps/api/app apps/api/tests apps/api/migrations scripts
+      - run: python -m pytest -q
+      - run: for file in apps/api/app/static/*.js; do node --check "$file"; done
+      - run: python scripts/evaluate.py --output evals/keyword-report.json
+      - run: python scripts/load_smoke.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: local-smoke-reports
+          path: evals/*report.json
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: knowra
+          POSTGRES_PASSWORD: test-only-password
+          POSTGRES_DB: knowra
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U knowra -d knowra"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://knowra:test-only-password@localhost:5432/knowra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r apps/api/requirements.txt
+      - run: python -m pytest -q
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build --build-arg INSTALL_SEMANTIC=false -t knowra-check apps/api
+      - run: docker build -f apps/api/Dockerfile.demo -t knowra-demo-check apps/api
+      - name: Curated fixtures fit the demo memory limit
+        run: docker run --rm --memory 512m -e KNOWRA_DB=/tmp/demo.db -e DEMO_PASSWORD=ci-only-demo-password knowra-demo-check python -c "from app.store import initialize; from app.demo import bootstrap; initialize(); bootstrap(); bootstrap(); print('Curated fixture bootstrap passed')"
+      - run: docker run --rm -e EMBEDDED_WORKER=false knowra-check python -c "from app.store import initialize; initialize(); print('Container migrations passed')"
+      - run: docker network create --internal knowra-parsing
+      - run: docker run -d --name parser --network knowra-parsing --read-only --tmpfs /tmp:size=128m,uid=10001,gid=10001,mode=1770 --cap-drop ALL --security-opt no-new-privileges --memory 2g knowra-check uvicorn app.parser_service:app --host 0.0.0.0 --port 8001
+      - run: docker run --rm --network knowra-parsing -v "$PWD/scripts/ci_parser_smoke.py:/check.py:ro" knowra-check python /check.py
+      - run: docker run -d --name clamav-ci --memory 2g clamav/clamav:stable
+      - run: docker network connect knowra-parsing clamav-ci
+      - run: docker run --rm --network knowra-parsing -e PYTHONPATH=/code -e CLAMAV_HOST=clamav-ci -v "$PWD/scripts/ci_scanner_smoke.py:/scanner.py:ro" knowra-check python /scanner.py
+      - run: docker build -t knowra-backup infrastructure/backup
+      - run: docker run --rm --entrypoint bash knowra-backup -n /usr/local/bin/knowra-backup
+      - run: docker run --rm --entrypoint bash knowra-backup -n /usr/local/bin/knowra-restore-drill
+      - name: Encrypted PostgreSQL backup and isolated restore drill
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name backup-db --network knowra-parsing -e POSTGRES_PASSWORD=ci-only pgvector/pgvector:pg16
+          for attempt in $(seq 1 30); do
+            if docker exec backup-db pg_isready -U postgres; then break; fi
+            sleep 2
+          done
+          docker run --rm --network knowra-parsing -e PYTHONPATH=/code -e DATABASE_URL=postgresql+psycopg://postgres:ci-only@backup-db/postgres -e EMBEDDED_WORKER=false -v "$PWD/scripts/ci_backup_seed.py:/seed.py:ro" knowra-check python /seed.py
+          drill_dir=$(mktemp -d)
+          docker run --rm -v "$drill_dir:/restore" --entrypoint bash knowra-backup -c 'age-keygen -o /restore/identity.txt 2>/dev/null'
+          recipient=$(docker run --rm -v "$drill_dir:/restore:ro" --entrypoint age-keygen knowra-backup -y /restore/identity.txt)
+          docker run --rm --network knowra-parsing -e PGHOST=backup-db -e PGUSER=postgres -e PGDATABASE=postgres -e PGPASSWORD=ci-only -e BACKUP_RECIPIENT="$recipient" -v "$drill_dir:/backups" knowra-backup once
+          sudo cp "$drill_dir"/*.dump.age "$drill_dir/backup.dump.age"
+          docker run --rm --network knowra-parsing -e PGHOST=backup-db -e PGUSER=postgres -e PGPASSWORD=ci-only -e RESTORE_DRILL_ACK=isolated-server -v "$drill_dir:/restore:ro" --entrypoint bash knowra-backup /usr/local/bin/knowra-restore-drill
+          target=$(docker exec backup-db psql -U postgres -tAc "SELECT datname FROM pg_database WHERE datname LIKE 'knowra_restore_%'")
+          docker exec backup-db psql -U postgres -d "$target" -tAc "SELECT encode(original,'hex') FROM document_versions" | grep -qx '434920726573746f72652070726f6265'
+  semantic-retrieval:
+    runs-on: ubuntu-latest
+    env:
+      EMBEDDING_MODEL: sentence-transformers/all-MiniLM-L6-v2
+      EMBEDDING_ALLOW_DOWNLOAD: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install -r apps/api/requirements.txt -r apps/api/requirements-semantic.txt
+      - run: python scripts/evaluate.py --output evals/semantic-report.json --minimum-recall 0.8
+      - uses: actions/upload-artifact@v4
+        with:
+          name: semantic-retrieval-report
+          path: evals/semantic-report.json

@@ -1,0 +1,4 @@
+* text=auto eol=lf
+*.pdf binary
+# Generated dependency bundle contains intentional whitespace in string literals.
+apps/api/app/static/neon-auth.js -whitespace

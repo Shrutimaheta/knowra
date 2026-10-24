@@ -1,0 +1,15 @@
+{$DOMAIN} {
+    @internal path /api/v1/health/ready
+    respond @internal 404
+    request_body {
+        max_size 12MB
+    }
+    reverse_proxy api:8000 {
+        flush_interval -1
+    }
+    header {
+        -Server
+    }
+    # Use the application's structured access log, which omits query strings.
+    # Proxy access logs can otherwise retain sensitive URL parameters.
+}

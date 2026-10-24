@@ -1,0 +1,10 @@
+.env
+.env.*
+**/.env
+**/.env.*
+**/data/
+**/__pycache__/
+.venv/
+.git/
+.test-*/
+tmp/
