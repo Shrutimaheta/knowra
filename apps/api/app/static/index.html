@@ -6,13 +6,17 @@
     <title>Knowra — Your company, connected.</title>
     <link rel="stylesheet" href="/static/style.css?v=map-2" />
     <script defer src="/static/neon-auth.js?v=neon-1"></script>
-    <script defer src="/static/app.js?v=neon-1"></script>
+    <script defer src="/static/app.js?v=public-demo-1"></script>
     <script defer src="/static/comparison.js?v=map-2"></script>
     <script defer src="/static/conflicts.js?v=map-2"></script>
     <script defer src="/static/knowledge-map.js?v=map-2"></script>
   </head>
   <body>
     <div id="demo-notice" class="demo-notice hidden" role="status"></div>
+    <section id="demo-loading" class="loading hidden" role="status">
+      <p id="demo-loading-message">Opening your demo workspace…</p>
+      <button id="demo-retry" class="secondary hidden" type="button">Try again</button>
+    </section>
     <div id="auth" class="auth-layout">
       <section class="auth-story">
         <a class="brand" href="/"

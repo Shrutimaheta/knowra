@@ -20,6 +20,7 @@ let user = null,
   pollTimer,
   streamController;
 let neonAuthClient = null;
+let publicDemo = !$("#demo-loading").classList.contains("hidden");
 async function api(path, options = {}) {
   const r = await fetch("/api/v1" + path, {
     credentials: "same-origin",
@@ -44,7 +45,8 @@ async function api(path, options = {}) {
   if (!r.ok) {
     if (r.status === 401 && user) {
       user = null;
-      showAuth();
+      if (publicDemo) queueMicrotask(() => enterPublicDemo());
+      else showAuth();
     }
     throw Error(
       typeof data.detail === "string"
@@ -199,6 +201,7 @@ async function start() {
   $("#user-avatar").textContent = user.name[0].toUpperCase();
   $("#user-role").textContent = user.role;
   $("[data-page=settings]").classList.toggle("hidden", Boolean(user.demo));
+  $("#logout").classList.toggle("hidden", publicDemo);
   $("#mode-label").textContent = user.provider === "gemini" ? "Gemini / " + user.mode : user.mode;
   await navigate(page);
   clearInterval(pollTimer);
@@ -798,6 +801,27 @@ async function handleAccountLink() {
   };
   return true;
 }
+function demoEntryError(message) {
+  $("#auth").classList.add("hidden");
+  $("#app").classList.add("hidden");
+  $("#demo-loading").classList.remove("hidden");
+  $("#demo-loading-message").textContent = "The demo is temporarily unavailable. " + message;
+  $("#demo-retry").classList.remove("hidden");
+}
+async function enterPublicDemo() {
+  $("#auth").classList.add("hidden");
+  $("#demo-loading").classList.remove("hidden");
+  $("#demo-loading-message").textContent = "Opening your demo workspace…";
+  $("#demo-retry").classList.add("hidden");
+  try {
+    await post("/auth/demo");
+    page = "overview";
+    activeConversation = null;
+    await start();
+    $("#demo-loading").classList.add("hidden");
+  } catch (error) { demoEntryError(error.message); }
+}
+$("#demo-retry").onclick = () => initializeApp();
 async function initializeApp() {
   try {
     const config = await api("/app-config");
@@ -810,6 +834,11 @@ async function initializeApp() {
     if (config.demo) {
       $("#demo-notice").textContent = config.notice;
       $("#demo-notice").classList.remove("hidden");
+      if (config.public_dashboard) {
+        publicDemo = true;
+        await enterPublicDemo();
+        return;
+      }
       if (registering) $("#auth-toggle").click();
       $("#auth-title").textContent = "Explore the Knowra demo";
       $("#auth-subtitle").textContent = "Use the reviewer password supplied by the demo owner.";
@@ -817,7 +846,9 @@ async function initializeApp() {
       document.querySelectorAll(".auth-switch").forEach(el => el.classList.add("hidden"));
       $(".privacy-note").textContent = "Shared fictional workspace. Do not enter private information.";
     }
-  } catch {}
+  } catch (error) {
+    if (publicDemo) { demoEntryError(error.message); return; }
+  }
   if (!(await handleAccountLink())) start().catch(() => showAuth());
 }
 initializeApp();

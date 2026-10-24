@@ -7,6 +7,8 @@ services:
     dockerfilePath: ./apps/api/Dockerfile.demo
     healthCheckPath: /api/v1/health
     envVars:
+      - key: DEMO_PUBLIC_DASHBOARD
+        value: "true"
       - key: DATABASE_URL
         sync: false
       - key: DEMO_PASSWORD

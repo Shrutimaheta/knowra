@@ -14,8 +14,11 @@ from app.config import validate_runtime
 from app.conflict_routes import register_conflict_routes
 from app.demo import NOTICE as DEMO_NOTICE
 from app.demo import bootstrap as bootstrap_demo
+from app.demo import consume_question as consume_demo_question
 from app.demo import enabled as demo_enabled
+from app.demo import enter as enter_demo
 from app.demo import permits as demo_permits
+from app.demo import public_dashboard as public_demo_dashboard
 from app.demo_catalog import DIRECTORY as BUSINESS_DIRECTORY
 from app.demo_catalog import DOCUMENTS as BUSINESS_DOCUMENTS
 from app.embeddings import model_name, query_vector, warmup
@@ -220,12 +223,24 @@ class Registration(Credentials):
 
 @app.get("/")
 def home():
+    if public_demo_dashboard():
+        from fastapi.responses import HTMLResponse
+
+        html = (STATIC / "index.html").read_text(encoding="utf-8")
+        html = html.replace('id="auth" class="auth-layout"', 'id="auth" class="auth-layout hidden"')
+        html = html.replace('id="demo-loading" class="loading hidden"', 'id="demo-loading" class="loading"')
+        return HTMLResponse(html)
     return FileResponse(STATIC / "index.html")
 
 
 @app.get("/api/v1/app-config")
 def app_config():
-    return {"demo": demo_enabled(), "notice": DEMO_NOTICE if demo_enabled() else "", "login_email": "demo@knowra.example" if demo_enabled() else "", "auth_provider": "neon" if neon_login() else "local", "auth_url": os.getenv("NEON_AUTH_BASE_URL") if neon_login() else None}
+    return {"demo": demo_enabled(), "public_dashboard": public_demo_dashboard(), "notice": DEMO_NOTICE if demo_enabled() else "", "login_email": "demo@knowra.example" if demo_enabled() else "", "auth_provider": "neon" if neon_login() else "local", "auth_url": os.getenv("NEON_AUTH_BASE_URL") if neon_login() else None}
+
+
+@app.post("/api/v1/auth/demo")
+def demo_entry(request: Request, response: Response):
+    return enter_demo(request, response)
 
 
 @app.post("/api/v1/auth/register", status_code=201)
@@ -882,6 +897,7 @@ def generate_reply(conversation_id, body, user):
         sources = [
             dict(source, citation_number=i) for i, source in enumerate(sources, 1)
         ]
+        consume_demo_question(user)
         yield {"type": "citations", "citations": sources}
         text, mode, total = "", "extractive", 0
         try:

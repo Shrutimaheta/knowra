@@ -54,7 +54,7 @@ def main():
                     time.sleep(.3)
                 report["postgres"] = ready.json()["database"]
                 report["revision"] = ready.json()["revision"]
-                assert report["postgres"] == "postgresql" and report["revision"] == "0006"
+                assert report["postgres"] == "postgresql" and report["revision"] == "0007"
                 assert app.get("/api/v1/documents").status_code == 401
                 email = "knowra-e2e-" + secrets.token_hex(6) + "@example.test"
                 password = secrets.token_urlsafe(30)

@@ -309,7 +309,7 @@ def test_limits_are_shared_and_quota_is_enforced(client, monkeypatch):
 
 def test_health_migration_and_conversation_delete(client):
     register(client)
-    assert client.get("/api/v1/health/ready").json()["revision"] == "0006"
+    assert client.get("/api/v1/health/ready").json()["revision"] == "0007"
     conversation = client.post("/api/v1/conversations").json()["id"]
     assert client.delete("/api/v1/conversations/" + conversation).status_code == 200
     assert (

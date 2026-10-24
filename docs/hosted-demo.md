@@ -2,11 +2,11 @@
 
 Live address: https://knowra-demo.onrender.com
 
-Deployed on 24 October 2026 using Render's Free Docker web service and a separate Neon demo database. This is the curated fictional-data profile, not the full production stack. The deployed application commit is `61e1a64`; subsequent documentation updates do not change its behavior.
+Deployed on 24 October 2026 using Render's Free Docker web service and a separate Neon demo database. This is the curated fictional-data profile, not the full production stack. The initial application commit was `61e1a64`. A subsequent update adds migration 0007, direct dashboard entry, isolated visitor accounts and persistent question budgets.
 
 ## Verified on the hosted service
 
-- PostgreSQL readiness at migration 0006; 11 ready documents and 13 immutable versions.
+- PostgreSQL readiness at migration 0007; 11 ready documents and 13 immutable versions.
 - Reviewer login, Secure/HttpOnly/SameSite session cookies, logout and protected access denial.
 - All 20 expected source-page searches in the expanded fictional corpus.
 - Original PDF checksum, source page preview and highlighted evidence.
@@ -24,7 +24,7 @@ During brief single-reviewer checks, Render reported memory below 165 MiB on the
 
 The demo uses a dedicated database and a DML-only application login. Its ability to read the original workspace's users and document versions was explicitly checked and denied. The original workspace was not imported. The application login cannot create databases, roles or schema objects.
 
-The reviewer email is `demo@knowra.example`. The owner supplies the reviewer password privately. Never add passwords, database URLs, API keys or the local deployment settings file to this repository. The shared reviewer account can see shared conversations and review decisions; use fictional information only.
+Visitors need no email or password. The demo automatically issues a random, HttpOnly visitor session and opens Overview. Chats, feedback and conflict reviews are scoped to the individual visitor; only fictional source documents are shared. The private bootstrap owner is not reused as the visitor identity. Do not publish DEMO_PASSWORD, database URLs, API keys or local deployment settings. Use fictional information only.
 
 The operator prepared the current schema using the private migration connection before provisioning the restricted runtime login. Future schema revisions must be migrated separately with the operator connection before updating the hosted app. Do not grant the public app the original workspace's credentials to work around migration permissions.
 
@@ -35,3 +35,7 @@ Render can sleep while idle; a wake-up can take longer than a warm request. Prov
 This service was created through Render's authenticated API using the Dockerfile and build context from the root Blueprint. Auto-deploy is off; reviewed updates require a manual Render deployment. No paid worker, Render database, persistent disk or billing upgrade was created. Neon storage and compute usage still share the existing project's free allowances.
 
 No scheduled off-host backups, independent uptime monitor, custom domain or production SMTP service has been provisioned for this demo. Follow release-checklist.md for a full deployment with real users and documents.
+
+## Public dashboard limits
+
+Visitor sessions last 24 hours. Admission is limited to 250 visitor records; expired visitor data is removed in batches as new visitors arrive. Each visitor may attempt 8 questions per UTC day and 3 per minute; the entire demo has a shared 60-question UTC-day budget. Budgets persist in PostgreSQL, survive restarts and cannot be reset globally by clearing browser cookies. Limits apply before provider calls and do not block source browsing or keyword search. This limits spending exposure but does not guarantee resistance to determined denial of service.

@@ -20,4 +20,4 @@ Immutable originals can be stored in the private bucket while SQL retains versio
 
 `python scripts/neon_e2e.py` is an **opt-in live check**. Read it before running: it starts a temporary configured app and needs real service access, creates a reserved test identity and fictional policy, calls the configured AI provider, and removes its generated test data. Provider quotas apply. The normal test suite needs no Neon account.
 
-For the curated Render demo, follow render-demo.md instead. That profile uses local reviewer authentication and database-backed fictional originals, regardless of the full app's optional managed-service settings.
+For the curated Render demo, follow render-demo.md instead. That profile uses automatic isolated visitor sessions and database-backed fictional originals, regardless of the full app's optional managed-service settings.

@@ -4,7 +4,7 @@
 
 Knowra helps teams explore documents, ask questions with citations, compare immutable versions, and review possible policy conflicts. A source inspector links answers back to the document version and page that supported them.
 
-> The full application and the free hosted demo have different capabilities. The Render demo uses fictional documents and disables uploads, live OCR, and local semantic inference. Try the [live demo](https://knowra-demo.onrender.com) with the reviewer credentials supplied by the owner. See [hosted verification and limits](docs/hosted-demo.md).
+> The full application and the free hosted demo have different capabilities. The Render demo uses fictional documents and disables uploads, live OCR, and local semantic inference. Try the [live demo](https://knowra-demo.onrender.com) directly on the dashboard, without signing in. See [hosted verification and limits](docs/hosted-demo.md).
 
 ## What you can do
 
@@ -91,7 +91,7 @@ The frontend uses HTML, CSS and JavaScript served by FastAPI. SQLAlchemy and Ale
 | AI synthesis | Optional provider key | Optional provider key; quotas apply |
 | Uploads and live OCR | Yes | Disabled |
 | Semantic embeddings | Optional local model | Disabled |
-| Accounts | Local or optional Neon Auth | Shared reviewer account |
+| Accounts | Local or optional Neon Auth | Isolated automatic visitor sessions |
 | Originals | Database or optional private object storage | Demo database |
 
 Deploy the repository's root `render.yaml` as a Blueprint: [Render demo instructions](docs/render-demo.md). Use a **new dedicated Neon database** for demo fixtures, never an existing workspace database. The blueprint requests one free web service and no paid database or worker. The actual hosting plan must still be checked before deploying. Free services can sleep; cold starts and AI quotas affect response time.
