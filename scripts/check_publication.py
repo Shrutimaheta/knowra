@@ -16,7 +16,7 @@ ROOT_FILES = {
 }
 PUBLIC_DOCS = {
     "architecture.md", "deployment.md", "release-checklist.md",
-    "render-demo.md", "free-hosting.md", "neon.md", "demo-documents.md",
+    "render-demo.md", "free-hosting.md", "neon.md", "demo-documents.md", "hosted-demo.md",
 }
 
 

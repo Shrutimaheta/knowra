@@ -4,7 +4,7 @@
 
 Knowra helps teams explore documents, ask questions with citations, compare immutable versions, and review possible policy conflicts. A source inspector links answers back to the document version and page that supported them.
 
-> The full application and the free hosted demo have different capabilities. The Render demo uses fictional documents and disables uploads, live OCR, and local semantic inference. A public demo URL will be added after deployment and verification.
+> The full application and the free hosted demo have different capabilities. The Render demo uses fictional documents and disables uploads, live OCR, and local semantic inference. Try the [live demo](https://knowra-demo.onrender.com) with the reviewer credentials supplied by the owner. See [hosted verification and limits](docs/hosted-demo.md).
 
 ## What you can do
 
