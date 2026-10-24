@@ -300,7 +300,7 @@ function renderDocuments() {
         ? ""
         : `<button class="primary" data-upload>+ Upload document</button>`,
     ) +
-    `<div class="toolbar"><input id="doc-filter" aria-label="Filter documents" placeholder="⌕  Find a document…" value="${esc(prior)}"><select id="category-filter" aria-label="Category"><option value="">All categories</option>${[...new Set(docs.map((d) => d.category))].map((c) => `<option>${esc(c)}</option>`).join("")}</select><button class="secondary" data-conflicts>Find possible conflicts</button><button class="secondary" data-seed>Load sample data</button>${user.role !== "viewer" ? '<button class="secondary" data-comparison-demo>Try comparison demo</button>' : ""}</div><div id="document-table"></div><p class="footer-note">PDF, PNG, JPEG, WebP, TXT, Markdown & CSV · Up to 10 MB per file · Private or shared with your workspace</p>`;
+    `<div class="toolbar"><input id="doc-filter" aria-label="Filter documents" placeholder="⌕  Find a document…" value="${esc(prior)}"><select id="category-filter" aria-label="Category"><option value="">All categories</option>${[...new Set(docs.map((d) => d.category))].map((c) => `<option>${esc(c)}</option>`).join("")}</select><button class="secondary" data-conflicts>Find possible conflicts</button><button class="secondary" data-seed>Load sample data</button>${user.role !== "viewer" ? '<button class="secondary" data-comparison-demo>Explore version comparison</button>' : ""}</div><div id="document-table"></div><p class="footer-note">PDF, PNG, JPEG, WebP, TXT, Markdown & CSV · Up to 10 MB per file · Private or shared with your workspace</p>`;
   const draw = () => {
     const q = $("#doc-filter").value.toLowerCase(),
       cat = $("#category-filter").value;
@@ -805,13 +805,13 @@ function demoEntryError(message) {
   $("#auth").classList.add("hidden");
   $("#app").classList.add("hidden");
   $("#demo-loading").classList.remove("hidden");
-  $("#demo-loading-message").textContent = "The demo is temporarily unavailable. " + message;
+  $("#demo-loading-message").textContent = "The workspace is temporarily unavailable. " + message;
   $("#demo-retry").classList.remove("hidden");
 }
 async function enterPublicDemo() {
   $("#auth").classList.add("hidden");
   $("#demo-loading").classList.remove("hidden");
-  $("#demo-loading-message").textContent = "Opening your demo workspace…";
+  $("#demo-loading-message").textContent = "Opening your workspace…";
   $("#demo-retry").classList.add("hidden");
   try {
     await post("/auth/demo");
@@ -838,8 +838,8 @@ async function initializeApp() {
         return;
       }
       if (registering) $("#auth-toggle").click();
-      $("#auth-title").textContent = "Explore the Knowra demo";
-      $("#auth-subtitle").textContent = "Use the reviewer password supplied by the demo owner.";
+      $("#auth-title").textContent = "Welcome to Knowra";
+      $("#auth-subtitle").textContent = "Use the reviewer password supplied by the workspace owner.";
       $("#auth-form [name=email]").value = config.login_email;
       document.querySelectorAll(".auth-switch").forEach(el => el.classList.add("hidden"));
       $(".privacy-note").textContent = "Shared fictional workspace. Do not enter private information.";

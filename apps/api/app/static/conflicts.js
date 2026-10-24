@@ -3,7 +3,7 @@
 async function conflictModal(selectedIds = []) {
   try {
     const documents = await api("/documents");
-    modal(`<div class="eyebrow">CROSS-DOCUMENT REVIEW</div><h2>Find possible conflicts</h2><p class="muted">Check up to eight documents for different policy values or opposite permissions. Findings need your review: dates, departments and eligibility can explain a difference.</p><details><summary>What these checks cover</summary><p class="muted">Annual leave, remote-work days, expense deadlines, carryover, equipment allowances, retention periods, response times, and matched explicit permissions. Complex conditions, unrelated facts and ambiguous multi-value sentences need manual review.</p></details><form id="conflict-scan-form"><fieldset class="conflict-documents"><legend>Choose documents</legend>${documents.map(d => `<label><input type="checkbox" name="conflict-document" value="${d.id}" ${selectedIds.includes(d.id) ? "checked" : ""}> <span>${esc(d.title)} <small>v${d.version} · ${esc(d.status)}</small></span></label>`).join("") || '<p class="muted">Upload at least two documents first.</p>'}</fieldset><div class="toolbar"><button class="primary" type="submit">Check selected documents</button><button class="secondary" type="button" id="refresh-conflict-docs">Refresh documents</button>${user.role !== "viewer" ? '<button class="secondary" type="button" id="load-conflict-demo">Try conflict demo</button>' : ""}</div></form><div id="conflict-result" aria-live="polite"></div>`);
+    modal(`<div class="eyebrow">CROSS-DOCUMENT REVIEW</div><h2>Find possible conflicts</h2><p class="muted">Check up to eight documents for different policy values or opposite permissions. Findings need your review: dates, departments and eligibility can explain a difference.</p><details><summary>What these checks cover</summary><p class="muted">Annual leave, remote-work days, expense deadlines, carryover, equipment allowances, retention periods, response times, and matched explicit permissions. Complex conditions, unrelated facts and ambiguous multi-value sentences need manual review.</p></details><form id="conflict-scan-form"><fieldset class="conflict-documents"><legend>Choose documents</legend>${documents.map(d => `<label><input type="checkbox" name="conflict-document" value="${d.id}" ${selectedIds.includes(d.id) ? "checked" : ""}> <span>${esc(d.title)} <small>v${d.version} · ${esc(d.status)}</small></span></label>`).join("") || '<p class="muted">Upload at least two documents first.</p>'}</fieldset><div class="toolbar"><button class="primary" type="submit">Check selected documents</button><button class="secondary" type="button" id="refresh-conflict-docs">Refresh documents</button>${user.role !== "viewer" ? '<button class="secondary" type="button" id="load-conflict-demo">Explore conflict review</button>' : ""}</div></form><div id="conflict-result" aria-live="polite"></div>`);
     $("#modal").classList.add("comparison-modal");
     const selection = () => Array.from(document.querySelectorAll('input[name="conflict-document"]:checked')).map(input => input.value);
     $("#refresh-conflict-docs").onclick = () => conflictModal(selection());
@@ -80,9 +80,9 @@ async function loadConflictDemo(button) {
   try {
     for (const year of [2025, 2026]) {
       const response = await fetch(`/static/demo/policy-${year}.pdf`);
-      if (!response.ok) throw Error("The fictional demonstration file could not be loaded.");
+      if (!response.ok) throw Error("The fictional sample file could not be loaded.");
       const form = new FormData();
-      form.append("file", await response.blob(), `Conflict demo - Handbook ${year}.pdf`);
+      form.append("file", await response.blob(), `Conflict sample - Handbook ${year}.pdf`);
       form.append("visibility", "private");
       form.append("category", "People");
       const created = await api("/documents", {method: "POST", body: form});
@@ -91,6 +91,6 @@ async function loadConflictDemo(button) {
     await navigate("documents");
     await conflictModal(ids);
     toast("Two fictional policy documents were uploaded privately. If still indexing, choose Refresh documents, then check them.");
-  } catch (error) { toast(`${ids.length ? "A demo document was saved in your library. " : ""}${error.message}`); }
+  } catch (error) { toast(`${ids.length ? "A sample document was saved in your library. " : ""}${error.message}`); }
   finally { if (button.isConnected) button.disabled = false; }
 }

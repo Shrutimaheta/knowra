@@ -132,7 +132,7 @@ async def protect(request, call_next):
     if demo_enabled() and not demo_permits(request.method, request.url.path):
         from fastapi.responses import JSONResponse
 
-        return JSONResponse(status_code=403, content={"detail": "This curated demo has uploads and administration disabled. Use the supplied fictional sources."})
+        return JSONResponse(status_code=403, content={"detail": "This workspace has uploads and administration disabled. Use the supplied fictional sources."})
     if request.method not in ("GET", "HEAD", "OPTIONS"):
         origin = request.headers.get("origin")
         if origin and origin != os.getenv("PUBLIC_URL", str(request.base_url)).rstrip(
@@ -755,7 +755,7 @@ def create_conversation(user=Depends(current_user)):
     conversation_id = uid()
     with db() as c:
         if demo_enabled() and c.execute("SELECT COUNT(*) AS n FROM conversations WHERE user_id=?", (user["id"],)).fetchone()["n"] >= 30:
-            raise HTTPException(429, "This demo allows 30 conversations. Delete an old conversation to continue.")
+            raise HTTPException(429, "This workspace allows 30 conversations. Delete an old conversation to continue.")
         c.execute(
             "INSERT INTO conversations VALUES (?,?,?,?,?)",
             (conversation_id, user["org"], user["id"], "New conversation", now()),
@@ -806,7 +806,7 @@ def generate_reply(conversation_id, body, user):
     with db() as c:
         check_conversation(c, conversation_id, user)
         if demo_enabled() and c.execute("SELECT COUNT(*) AS n FROM messages m JOIN conversations c ON c.id=m.conversation WHERE c.user_id=?", (user["id"],)).fetchone()["n"] >= 300:
-            raise HTTPException(429, "Demo message limit reached. Delete an old conversation to continue.")
+            raise HTTPException(429, "Message limit reached. Delete an old conversation to continue.")
         c.execute("DELETE FROM chat_runs WHERE expires<?", (time.time(),))
         try:
             c.execute(

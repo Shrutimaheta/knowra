@@ -5,11 +5,11 @@ async function loadComparisonDemo(button) {
   try {
     const files = await Promise.all([2025, 2026].map(async year => {
       const response = await fetch(`/static/demo/policy-${year}.pdf`);
-      if (!response.ok) throw Error("The demonstration files could not be loaded.");
+      if (!response.ok) throw Error("The sample files could not be loaded.");
       return response.blob();
     }));
     const first = new FormData();
-    first.append("file", files[0], "Comparison demo - Workplace policy.pdf");
+    first.append("file", files[0], "Comparison sample - Workplace policy.pdf");
     first.append("category", "People");
     first.append("visibility", "private");
     const created = await api("/documents", {method: "POST", body: first});
@@ -18,7 +18,7 @@ async function loadComparisonDemo(button) {
     try {
       await api(`/documents/${created.id}/versions`, {method: "POST", body: next});
     } catch (error) {
-      throw Error(`The first demo version was saved. Add the second version from the source viewer. ${error.message}`);
+      throw Error(`The first sample version was saved. Add the second version from the source viewer. ${error.message}`);
     }
     await navigate("documents");
     toast("Two fictional policy versions uploaded. Open Compare versions when both are Ready.");

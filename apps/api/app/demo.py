@@ -18,7 +18,7 @@ from app.store import db
 from fastapi import HTTPException
 
 NOTICE = (
-    "Fictional-data demo. Your chats and reviews are separate from other visitors. "
+    "Fictional sample workspace. Your chats and reviews are separate from other visitors. "
     "Do not enter private information. Up to 8 questions per visitor per day; shared daily limits apply. "
     "Uploads and live OCR are disabled. The app can sleep while idle."
 )
@@ -37,7 +37,7 @@ def public_dashboard():
 
 def enter(request, response):
     if not public_dashboard():
-        raise HTTPException(404, "Public demo entry is unavailable.")
+        raise HTTPException(404, "Public workspace entry is unavailable.")
     now = time.time()
     org = identity("workspace")
     with db() as c:
@@ -49,7 +49,7 @@ def enter(request, response):
             return {"ok": True}
         # Serialize capacity and cleanup across processes without touching other workspaces.
         if not c.execute("SELECT id FROM organizations WHERE id=?", (org,)).fetchone():
-            raise HTTPException(503, "The demo is still preparing. Try again shortly.")
+            raise HTTPException(503, "The workspace is still preparing. Try again shortly.")
         c.execute("UPDATE organizations SET name=name WHERE id=?", (org,))
         expired = c.execute(
             "SELECT g.user_id FROM demo_visitors g JOIN users u ON u.id=g.user_id WHERE g.expires<? AND u.org=? AND u.role='viewer' AND u.id<>? LIMIT 25",
@@ -63,15 +63,15 @@ def enter(request, response):
             c.execute("DELETE FROM users WHERE id=? AND org=? AND role='viewer'", (user_id, org))
         c.execute("DELETE FROM demo_usage WHERE expires<?", (now,))
         if c.execute("SELECT COUNT(*) AS n FROM demo_visitors").fetchone()["n"] >= MAX_VISITORS:
-            raise HTTPException(503, "The demo is busy. Please try again later.")
+            raise HTTPException(503, "The workspace is busy. Please try again later.")
         user = {"id": str(uuid4()), "org": org}
         c.execute(
             "INSERT INTO users (id,email,name,password,org,role) VALUES (?,?,?,'!visitor-password-disabled',?,'viewer')",
-            (user["id"], "visitor-" + user["id"] + "@example.test", "Demo visitor", org),
+            (user["id"], "visitor-" + user["id"] + "@example.test", "Visitor", org),
         )
         expires = now + 86400
         c.execute("INSERT INTO demo_visitors (user_id,expires) VALUES (?,?)", (user["id"], expires))
-        token = session(c, user, response, "Public demo visitor")
+        token = session(c, user, response, "Workspace visitor")
         c.execute("UPDATE sessions SET expires=? WHERE token=?", (expires, token))
     return {"ok": True}
 
@@ -95,11 +95,11 @@ def consume_question(user):
             if not row:
                 wait = max(1, int(expires - now) + 1)
                 if period.startswith("minute:"):
-                    message = "Please wait a minute before asking another demo question. You can still explore the documents."
+                    message = "Please wait a minute before asking another question. You can still explore the documents."
                 elif bucket == "all-visitors":
-                    message = "The shared demo question budget is used for today. You can still search and explore the documents."
+                    message = "The shared question budget is used for today. You can still search and explore the documents."
                 else:
-                    message = "Your daily demo question limit has been reached. You can still search and explore the documents."
+                    message = "Your daily question limit has been reached. You can still search and explore the documents."
                 raise HTTPException(429, message, headers={"Retry-After": str(wait)})
 
 
@@ -137,8 +137,11 @@ def bootstrap():
                 c.execute("UPDATE users SET password=? WHERE id=?", (password_hash(password), account))
                 c.execute("DELETE FROM sessions WHERE user_id=?", (account,))
         else:
-            c.execute("INSERT INTO organizations VALUES (?,?)", (org, "Knowra public demo"))
-            c.execute("INSERT INTO users VALUES (?,?,?,?,?,?)", (account, email, "Demo reviewer", password_hash(password), org, "viewer"))
+            c.execute("INSERT INTO organizations VALUES (?,?)", (org, "Knowra workspace"))
+            c.execute("INSERT INTO users VALUES (?,?,?,?,?,?)", (account, email, "Workspace reviewer", password_hash(password), org, "viewer"))
+        c.execute("UPDATE organizations SET name=? WHERE id=? AND name=?", ("Knowra workspace", org, "Knowra public demo"))
+        c.execute("UPDATE users SET name=? WHERE org=? AND name=? AND id IN (SELECT user_id FROM demo_visitors)", ("Visitor", org, "Demo visitor"))
+        c.execute("UPDATE users SET name=? WHERE id=? AND name=?", ("Workspace reviewer", account, "Demo reviewer"))
         directory = Path(__file__).parent / "static/demo"
         sources = [(directory / f"policy-{year}.pdf").read_bytes() for year in (2025, 2026)]
         fixtures = [("Handbook 2025.pdf", "People", [sources[0]]), ("Handbook 2026.pdf", "People", [sources[1]]), ("Workplace policy.pdf", "People", sources)]
@@ -166,7 +169,7 @@ def bootstrap():
             image.save(output, format="PNG")
             pages = ["\n".join(lines)]
             c.execute("INSERT INTO documents (id,org,owner,title,category,visibility,status,content,created) VALUES (?,?,?,?,?,?,'ready',?,?)", (document, org, account, title, "Finance", "workspace", pages[0], stamp))
-            _version(c, document, title, 1, output.getvalue(), pages, stamp, "Pre-indexed fictional image sample; live OCR is disabled in this cloud demo.")
+            _version(c, document, title, 1, output.getvalue(), pages, stamp, "Pre-indexed fictional image sample; live OCR is disabled in this hosted workspace.")
 
 
 def _version(c, document, title, number, original, pages, stamp, warning=None):
