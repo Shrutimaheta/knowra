@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = {
     ".gitignore", ".gitattributes", ".dockerignore", ".env.example",
-    "README.md", "CONTRIBUTING.md", "SECURITY.md", "package.json",
+    "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "package.json",
     "package-lock.json", "tsconfig.json", "pytest.ini", "ruff.toml",
     "neon.ts", "hello.ts", "render.yaml", "compose.yaml",
     "compose.production.yaml", "compose.operations.yaml",
@@ -27,6 +27,8 @@ def allowed(name):
     if name in ROOT_FILES or name in {"evals/retrieval.json", "evals/demo-corpus.json"}:
         return True
     if name.startswith("docs/"):
+        if name in {"docs/images/overview.jpg", "docs/images/knowledge-map.jpg"}:
+            return True
         return path.name in PUBLIC_DOCS and len(path.parts) == 2
     if name.startswith(".github/"):
         return path.suffix in {".yml", ".yaml", ".md"}

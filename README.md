@@ -10,6 +10,14 @@ Find answers in documents, follow the supporting sources, and explore how inform
 
 Open the link to enter the dashboard directly. No sign-up or password is required.
 
+## A look inside
+
+Screenshots from the live public sample workspace.
+
+| Workspace overview | Interactive Knowledge Map |
+| --- | --- |
+| <img src="docs/images/overview.jpg" alt="Knowra dashboard with its document library and quick-start questions" width="360"> | <img src="docs/images/knowledge-map.jpg" alt="Knowra Knowledge Map connecting documents to their saved versions" width="360"> |
+
 ## What you can explore
 
 - **Ask Knowra** — ask questions and open the document pages behind each answer.
@@ -107,3 +115,7 @@ neon.ts / hello.ts   Optional Neon services and integrity Function
 See the [deployment guide](docs/deployment.md), [hosted setup](docs/render-demo.md), [contribution guide](CONTRIBUTING.md), and [security policy](SECURITY.md).
 
 Keep API keys, database credentials, uploaded documents, and backups private. Copy `.env.example` for local settings and never commit your `.env` file. The full application and the hosted visitor experience have different capabilities; see the [hosting limits](docs/hosted-demo.md).
+
+## License
+
+Licensed under the [MIT License](LICENSE). You may use, modify, and redistribute the code, including commercially, provided you retain the copyright and license notice. The software is supplied without warranty. Third-party dependencies retain their own licenses.
