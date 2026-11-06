@@ -31,6 +31,9 @@ def engine_for(url):
         options.update(
             connect_args={"timeout": 30, "check_same_thread": False}, poolclass=NullPool
         )
+    elif os.getenv("VERCEL") == "1":
+        # Neon pools connections upstream; do not retain sockets in frozen functions.
+        options.update(poolclass=NullPool, connect_args={"connect_timeout": 10})
     engine = create_engine(url, **options)
     if engine.dialect.name == "sqlite":
 

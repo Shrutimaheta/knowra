@@ -59,7 +59,7 @@ async def lifespan(app):
     validate_runtime()
     if os.getenv("AUTO_MIGRATE", "true") == "true":
         initialize()
-    if demo_enabled():
+    if demo_enabled() and os.getenv("DEMO_BOOTSTRAP", "true") == "true":
         bootstrap_demo()
     stop = threading.Event()
     worker = None
@@ -135,9 +135,10 @@ async def protect(request, call_next):
         return JSONResponse(status_code=403, content={"detail": "This workspace has uploads and administration disabled. Use the supplied fictional sources."})
     if request.method not in ("GET", "HEAD", "OPTIONS"):
         origin = request.headers.get("origin")
-        if origin and origin != os.getenv("PUBLIC_URL", str(request.base_url)).rstrip(
-            "/"
-        ):
+        allowed_origins = {os.getenv("PUBLIC_URL", str(request.base_url)).rstrip("/")}
+        if os.getenv("VERCEL") == "1" and os.getenv("VERCEL_URL"):
+            allowed_origins.add("https://" + os.environ["VERCEL_URL"])
+        if origin and origin not in allowed_origins:
             return Response("Cross-origin requests are forbidden", status_code=403)
     if request.url.path.startswith("/api/"):
         if (

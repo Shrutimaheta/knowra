@@ -5,6 +5,7 @@ __pycache__/
 .env.*
 !.env.example
 node_modules/
+.vercel/
 data/
 .test-run*/
 *.pyc

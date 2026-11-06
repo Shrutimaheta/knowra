@@ -6,7 +6,7 @@ Find answers in documents, follow the supporting sources, and explore how inform
 
 ## Open Knowra
 
-### [Launch the live app →](https://knowra-demo.onrender.com/)
+### [Launch the live app →](https://knowra-ecru.vercel.app/)
 
 Open the link to enter the dashboard directly. No sign-up or password is required.
 
@@ -32,7 +32,9 @@ Screenshots from the live public sample workspace.
 - “How many annual leave days are available?”
 - “What changed in the Atlas requirements?”
 
-The hosted experience includes fictional sample documents. Uploads and live OCR are unavailable in this version. Question limits apply, and the first visit may take a little longer while the free hosting wakes up.
+The hosted experience includes fictional sample documents. Uploads and live OCR are unavailable in this version. Question limits apply; AI responses depend on provider availability and quotas.
+
+Deployment instructions: [Vercel](docs/vercel.md).
 
 ## Try it locally
 
