@@ -16,7 +16,7 @@ ROOT_FILES = {
 }
 PUBLIC_DOCS = {
     "architecture.md", "deployment.md", "release-checklist.md",
-    "render-demo.md", "free-hosting.md", "neon.md", "demo-documents.md", "hosted-demo.md",
+    "render-demo.md", "free-hosting.md", "neon.md", "demo-documents.md", "hosted-demo.md", "vercel.md",
 }
 
 
@@ -39,6 +39,8 @@ def allowed(name):
     if name.startswith("infrastructure/"):
         return path.suffix in {".sh", ".service", ".timer"} or path.name in {"Dockerfile", "Caddyfile"}
     if name.startswith("apps/api/"):
+        if name in {"apps/api/vercel.json", "apps/api/vercel_entry.py"}:
+            return True
         if path.name in {"Dockerfile", "Dockerfile.demo", "alembic.ini", ".dockerignore"}:
             return len(path.parts) == 3
         if path.name.startswith("requirements") and path.suffix == ".txt":
