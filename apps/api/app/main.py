@@ -240,8 +240,14 @@ def app_config():
 
 
 @app.post("/api/v1/auth/demo")
-def demo_entry(request: Request, response: Response):
-    return enter_demo(request, response)
+def demo_entry(request: Request, response: Response, dashboard: bool = False):
+    result = enter_demo(request, response, include_user=dashboard)
+    if not dashboard:
+        return result
+    # Reuse the just-validated visitor; no extra browser authentication round trip.
+    visitor = result["user"]
+    visible = documents(visitor)
+    return {"user": me(visitor), "documents": visible, "analytics": analytics_summary(visitor, visible)}
 
 
 @app.post("/api/v1/auth/register", status_code=201)
@@ -1082,7 +1088,10 @@ def feedback(message_id: str, body: Feedback, user=Depends(current_user)):
 
 @app.get("/api/v1/analytics")
 def analytics(user=Depends(current_user)):
-    docs = documents(user)
+    return analytics_summary(user, documents(user))
+
+
+def analytics_summary(user, docs):
     with db() as c:
         counts = c.execute(
             "SELECT COUNT(*) AS questions, COALESCE(AVG(m.latency),0) AS latency, COALESCE(SUM(m.tokens),0) AS tokens, SUM(CASE WHEN m.feedback=1 THEN 1 ELSE 0 END) AS positive FROM messages m JOIN conversations c ON c.id=m.conversation WHERE c.org=? AND c.user_id=? AND m.role='assistant'",

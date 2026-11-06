@@ -75,3 +75,10 @@ The public dashboard HTML request took about 0.82 seconds in one measured reques
 This is a single network-inclusive observation, not a guaranteed browser load time
 or a benchmark for all regions or cold starts. The deployment uses the existing
 free Hobby workspace; no paid plan was created. Render remains available.
+
+The opening flow was subsequently reduced from five sequential API requests to
+one authenticated dashboard-entry response. Three network-inclusive measurements
+of the old API sequence were 4.01, 3.87 and 3.68 seconds; the optimized preview
+measured 2.10, 1.62 and 1.52 seconds. These observations exclude page asset loading
+and are not universal latency guarantees. Dashboard payloads remain uncached and
+scoped to each authenticated visitor; returning visitors retain their own totals.

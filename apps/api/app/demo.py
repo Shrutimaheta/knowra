@@ -35,18 +35,18 @@ def public_dashboard():
     return enabled() and os.getenv("DEMO_PUBLIC_DASHBOARD", "true") == "true"
 
 
-def enter(request, response):
+def enter(request, response, *, include_user=False):
     if not public_dashboard():
         raise HTTPException(404, "Public workspace entry is unavailable.")
     now = time.time()
     org = identity("workspace")
     with db() as c:
         existing = c.execute(
-            "SELECT u.id FROM users u JOIN sessions s ON s.user_id=u.id JOIN demo_visitors g ON g.user_id=u.id WHERE s.token=? AND s.expires>? AND g.expires>? AND u.org=? AND u.role='viewer'",
+            "SELECT u.id,u.org,u.email,u.name,u.role FROM users u JOIN sessions s ON s.user_id=u.id JOIN demo_visitors g ON g.user_id=u.id WHERE s.token=? AND s.expires>? AND g.expires>? AND u.org=? AND u.role='viewer'",
             (digest(request.cookies.get("knowra_session", "")), now, now, org),
         ).fetchone()
         if existing:
-            return {"ok": True}
+            return {"ok": True, "user": dict(existing)} if include_user else {"ok": True}
         # Serialize capacity and cleanup across processes without touching other workspaces.
         if not c.execute("SELECT id FROM organizations WHERE id=?", (org,)).fetchone():
             raise HTTPException(503, "The workspace is still preparing. Try again shortly.")
@@ -73,6 +73,8 @@ def enter(request, response):
         c.execute("INSERT INTO demo_visitors (user_id,expires) VALUES (?,?)", (user["id"], expires))
         token = session(c, user, response, "Workspace visitor")
         c.execute("UPDATE sessions SET expires=? WHERE token=?", (expires, token))
+    if include_user:
+        return {"ok": True, "user": user | {"email": "visitor-" + user["id"] + "@example.test", "name": "Visitor", "role": "viewer"}}
     return {"ok": True}
 
 

@@ -148,3 +148,35 @@ def test_visitor_capacity_is_bounded(client, monkeypatch):
     monkeypatch.setattr("app.demo.MAX_VISITORS", 1)
     client.cookies.clear()
     assert client.post("/api/v1/auth/demo").status_code == 503
+
+
+def test_dashboard_entry_returns_the_authenticated_visitors_own_data(client, monkeypatch):
+    prepare(monkeypatch)
+    first = client.post("/api/v1/auth/demo?dashboard=true")
+    assert first.status_code == 200
+    data = first.json()
+    assert "password" not in data["user"]
+    assert data["user"] == client.get("/api/v1/users/me").json()
+    assert data["documents"] == client.get("/api/v1/documents").json()
+    assert data["analytics"] == client.get("/api/v1/analytics").json()
+    assert first.headers["cache-control"] == "no-store"
+    conversation = client.post("/api/v1/conversations").json()["id"]
+    client.post(f"/api/v1/conversations/{conversation}/messages", json={"content": "annual leave"})
+    returning = client.post("/api/v1/auth/demo?dashboard=true").json()
+    assert returning["user"]["id"] == data["user"]["id"]
+    assert returning["analytics"]["questions"] == 1
+    other = TestClient(app)
+    try:
+        separate = other.post("/api/v1/auth/demo?dashboard=true").json()
+        assert separate["user"]["id"] != data["user"]["id"]
+        assert separate["analytics"]["questions"] == 0
+        assert other.get(f"/api/v1/conversations/{conversation}/messages").status_code == 404
+    finally:
+        other.close()
+
+
+def test_dashboard_entry_cannot_bypass_disabled_public_access(client, monkeypatch):
+    assert client.post("/api/v1/auth/demo?dashboard=true").status_code == 404
+    prepare(monkeypatch)
+    monkeypatch.setenv("DEMO_PUBLIC_DASHBOARD", "false")
+    assert client.post("/api/v1/auth/demo?dashboard=true").status_code == 404

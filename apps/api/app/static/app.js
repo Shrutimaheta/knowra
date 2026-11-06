@@ -191,8 +191,8 @@ function bindActions() {
       b.onclick = seedDemo;
     });
 }
-async function start() {
-  user = await api("/users/me");
+async function start(initial = null) {
+  user = initial?.user || await api("/users/me");
   $("#auth").classList.add("hidden");
   $("#app").classList.remove("hidden");
   $("#workspace-name").textContent = user.workspace;
@@ -203,7 +203,7 @@ async function start() {
   $("[data-page=settings]").classList.toggle("hidden", Boolean(user.demo));
   $("#logout").classList.toggle("hidden", publicDemo);
   $("#mode-label").textContent = user.provider === "gemini" ? "Gemini / " + user.mode : user.mode;
-  await navigate(page);
+  await navigate(page, initial);
   clearInterval(pollTimer);
   pollTimer = setInterval(async () => {
     if (!user || !docs.some((d) => d.status === "processing")) return;
@@ -215,7 +215,7 @@ async function start() {
     } catch {}
   }, 2500);
 }
-async function navigate(next) {
+async function navigate(next, initial = null) {
   if (busy) {
     toast("Cancel the current answer before leaving this conversation.");
     return;
@@ -236,7 +236,7 @@ async function navigate(next) {
   $("#content").innerHTML =
     '<div class="loading">Gathering your workspace…</div>';
   try {
-    docs = await api("/documents");
+    docs = initial?.documents || await api("/documents");
     $("#doc-count").textContent = docs.length;
     await {
       overview: renderOverview,
@@ -246,7 +246,7 @@ async function navigate(next) {
       analytics: renderAnalytics,
       map: renderKnowledgeMap,
       settings: renderSettings,
-    }[page]();
+    }[page](initial?.analytics);
   } catch (err) {
     $("#content").innerHTML = empty(
       "Something needs attention",
@@ -260,8 +260,8 @@ function stat(label, value, caption) {
 function docRow(d) {
   return `<div class="document-row"><span class="file-icon">▤</span><div><button class="link-button" data-source="${d.id}">${esc(d.title)}</button><small>${esc(d.category)} · ${date(d.created)}</small></div><span class="status ${d.status}">${esc(d.status)}</span></div>`;
 }
-async function renderOverview() {
-  const a = await api("/analytics");
+async function renderOverview(initialAnalytics) {
+  const a = initialAnalytics || await api("/analytics");
   const greet =
     new Date().getHours() < 12
       ? "Good morning"
@@ -814,15 +814,19 @@ async function enterPublicDemo() {
   $("#demo-loading-message").textContent = "Opening your workspace…";
   $("#demo-retry").classList.add("hidden");
   try {
-    await post("/auth/demo");
+    const initial = await post("/auth/demo?dashboard=true");
     page = "overview";
     activeConversation = null;
-    await start();
+    await start(initial);
     $("#demo-loading").classList.add("hidden");
   } catch (error) { demoEntryError(error.message); }
 }
 $("#demo-retry").onclick = () => initializeApp();
 async function initializeApp() {
+  if (publicDemo) {
+    await enterPublicDemo();
+    return;
+  }
   try {
     const config = await api("/app-config");
     if (config.auth_provider === "neon") {
