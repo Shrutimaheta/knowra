@@ -24,7 +24,7 @@ Screenshots from the live public sample workspace.
 - **Knowledge library** — browse the included policies, onboarding guides, and project requirements.
 - **Version comparison** — see what changed between document versions.
 - **Conflict reviews** — explore possible differences between policies and record your review.
-- **Knowledge map** — discover connections between documents, topics, and answers.
+- **Knowledge map** — explore saved links between documents, versions, and cited answers.
 
 ## Try these questions
 

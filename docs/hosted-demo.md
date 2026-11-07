@@ -1,6 +1,8 @@
 # Hosted demo
 
-Live address: https://knowra-demo.onrender.com
+Current live address: https://knowra-ecru.vercel.app/ — see [Vercel deployment and verification](vercel.md).
+
+The Render deployment below is retained as a fallback at https://knowra-demo.onrender.com. The following section records its original deployment and verification history.
 
 Deployed on 24 October 2026 using Render's Free Docker web service and a separate Neon demo database. This is the curated fictional-data profile, not the full production stack. The initial application commit was `61e1a64`. A subsequent update adds migration 0007, direct dashboard entry, isolated visitor accounts and persistent question budgets.
 

@@ -6,4 +6,4 @@ Do not put credentials, private documents or exploit details in a public issue. 
 
 For deployments, keep secrets outside Git, use HTTPS and secure cookies, follow docs/release-checklist.md, and verify tenant permissions, upload scanning, restricted parsing, backups and recovery on the actual host. Rotate any credential accidentally published; deleting it from the current file does not remove it from Git history.
 
-Only test systems you control. Use fictional documents and disposable test identities for integration tests. Public demo users share a reviewer account and should never submit confidential information.
+Only test systems you control. Use fictional documents and disposable test identities for integration tests. The public workspace gives each visitor a separate expiring session; fictional source documents are shared, while conversations and reviews are scoped to each visitor. Never submit confidential information. Uploads, account administration and live OCR are disabled in the public profile.

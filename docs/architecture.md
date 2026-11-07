@@ -34,7 +34,7 @@ flowchart LR
 
 ## Database and upgrades
 
-SQLAlchemy manages transactions and portable parameter binding. Alembic revisions `0001`–`0006` create the baseline, add operational/security tables, and preserve legacy text and citations as immutable versions. Existing unversioned databases are stamped at the compatible baseline and then upgraded. Destructive downgrades are disabled. Back up before deploying migrations. PostgreSQL migration adds pgvector, a full-text GIN index and a cosine HNSW index for 384-dimensional embeddings. Operators need migration privileges to create the extension; the runtime role does not.
+SQLAlchemy manages transactions and portable parameter binding. Alembic revisions `0001`–`0007` create the baseline, add operational/security tables, and preserve legacy text and citations as immutable versions. Existing unversioned databases are stamped at the compatible baseline and then upgraded. Destructive downgrades are disabled. Back up before deploying migrations. PostgreSQL migration adds pgvector, a full-text GIN index and a cosine HNSW index for 384-dimensional embeddings. Operators need migration privileges to create the extension; the runtime role does not.
 
 Original files, pages, checksum and version number live in `document_versions`. Chunks point at an immutable version. Only the document's current ready version enters retrieval. Previous versions remain readable through old citation links. Legacy PDF binaries were never saved by the old application; migration preserves the available extracted page text rather than inventing a replacement PDF.
 
@@ -72,10 +72,10 @@ PDF validation happens in the API; OCR and layout extraction run in the durable 
 
 Automated tests cover account and permission boundaries, immutable originals/citations, reset replay and expiry, session revocation, invitation roles, crashed/retried jobs, shared limits, quotas, successful and interrupted SSE, legacy migration and backup/restore. The provider wire protocol is regression-tested with simulated streams. Gemini streaming synthesis was additionally verified against the live API using fictional policy evidence.
 
-The six-question retrieval evaluation uses actual local MiniLM embeddings and measures retrieval only. The local HTTP smoke load exercises 50 keyword searches against four fictional documents. Neither result is a production benchmark. PostgreSQL/pgvector and container jobs are supplied in CI; they have not been executed on this Docker-less computer. Public deployment and live SMTP/provider validation require the operator's configuration.
+The six-question retrieval evaluation uses actual local MiniLM embeddings and measures retrieval only. The local HTTP smoke load exercises 50 keyword searches against four fictional documents. Neither result is a production benchmark. The PostgreSQL/pgvector, container, SQLite and semantic-retrieval jobs passed for commit `4f172be` in GitHub Actions. Containers were verified in CI rather than on this Docker-less computer. The public Vercel profile uses keyword retrieval and prepared sources; full production SMTP, backup scheduling and host monitoring still require operator configuration.
 
 Conflict reviews are derived from current, permission-checked source versions using bounded local policy checks. Review fingerprints bind both exact source passages and version IDs; decisions are keyed by user and fingerprint. A write locks the organization row also used by uploads, rechecks current versions and permissions, and rederives the finding before upserting. Reviews do not mutate source text or feed authority instructions into generation. Source deletion cascades saved reviews.
 
 ## Optional managed services
 
-Revision 0006 adds managed identity bindings and external original-object keys and sizes. Neon storage can hold private originals while metadata stays in SQL. See [neon.md](neon.md) for opt-in configuration and known limits.
+Revision 0007 adds isolated expiring public visitors and persistent question budgets. Revision 0006 adds managed identity bindings and external original-object keys and sizes. Neon storage can hold private originals while metadata stays in SQL. See [neon.md](neon.md) for opt-in configuration and known limits.
