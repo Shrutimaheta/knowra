@@ -10,6 +10,8 @@ Find answers in documents, follow the supporting sources, and explore how inform
 
 Open the link to enter the dashboard directly. No sign-up or password is required.
 
+🎬 [Watch the 77-second walkthrough on LinkedIn →](https://lnkd.in/p/g3gWBW2k)
+
 ## A look inside
 
 Screenshots from the live public sample workspace.
