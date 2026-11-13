@@ -22,12 +22,18 @@ with pymupdf.open() as pdf:
     page.insert_text((50, 50), "Fictional annual leave allowance is 24 days.")
     data = pdf.tobytes()
 for operation in ("validate", "extract", "image", "highlight"):
-    response = httpx.post(origin + "/process", timeout=310, json={
-        "operation": operation, "filename": "policy.pdf",
-        "data": base64.b64encode(data).decode(), "number": 1,
-        "pages": ["Fictional annual leave allowance is 24 days."],
-        "quote": "Fictional annual leave allowance is 24 days.",
-    })
+    response = httpx.post(
+        origin + "/process",
+        timeout=310,
+        json={
+            "operation": operation,
+            "filename": "policy.pdf",
+            "data": base64.b64encode(data).decode(),
+            "number": 1,
+            "pages": ["Fictional annual leave allowance is 24 days."],
+            "quote": "Fictional annual leave allowance is 24 days.",
+        },
+    )
     response.raise_for_status()
     result = response.json()
     if operation == "extract":

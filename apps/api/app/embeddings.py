@@ -49,10 +49,14 @@ def encode(texts):
         # the inference lock for its entire document.
         with _inference_lock:
             vectors.extend(
-                model(name).encode(
-                    texts[start:start + 32], normalize_embeddings=True,
-                    show_progress_bar=False, batch_size=32,
-                ).tolist()
+                model(name)
+                .encode(
+                    texts[start : start + 32],
+                    normalize_embeddings=True,
+                    show_progress_bar=False,
+                    batch_size=32,
+                )
+                .tolist()
             )
     return vectors
 
@@ -63,10 +67,14 @@ def _query_vector(name, query):
     # Include the model in the key; return immutable data to callers.
     with _inference_lock:
         return tuple(
-            model(name).encode(
-                [query], normalize_embeddings=True, show_progress_bar=False,
+            model(name)
+            .encode(
+                [query],
+                normalize_embeddings=True,
+                show_progress_bar=False,
                 batch_size=1,
-            ).tolist()[0]
+            )
+            .tolist()[0]
         )
 
 

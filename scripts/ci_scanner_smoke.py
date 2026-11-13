@@ -16,7 +16,9 @@ while True:
             raise
         time.sleep(5)
 # Standard anti-malware test string, never executed or written to a file.
-sample = base64.b64decode("WDVPIVAlQEFQWzRcUFpYNTQoUF4pN0NDKTd9JEVJQ0FSLVNUQU5EQVJELUFOVElWSVJVUy1URVNULUZJTEUhJEgrSCo=")
+sample = base64.b64decode(
+    "WDVPIVAlQEFQWzRcUFpYNTQoUF4pN0NDKTd9JEVJQ0FSLVNUQU5EQVJELUFOVElWSVJVUy1URVNULUZJTEUhJEgrSCo="
+)
 try:
     scan(sample)
 except HTTPException as error:

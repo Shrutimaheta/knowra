@@ -160,11 +160,7 @@ def run_once(version_id=None):
                 permanent = isinstance(error, ExtractionError) or (
                     isinstance(error, HTTPException) and error.status_code == 400
                 )
-                status = (
-                    "failed"
-                    if attempt >= MAX_ATTEMPTS or permanent
-                    else "queued"
-                )
+                status = "failed" if attempt >= MAX_ATTEMPTS or permanent else "queued"
                 detail = (
                     str(error)
                     if isinstance(error, ExtractionError)

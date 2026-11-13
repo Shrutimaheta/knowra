@@ -9,7 +9,9 @@ GOOD = "strong-test-password"
 
 
 def attempt(client, password, email=EMAIL):
-    return client.post("/api/v1/auth/login", json={"email": email, "password": password})
+    return client.post(
+        "/api/v1/auth/login", json={"email": email, "password": password}
+    )
 
 
 def test_account_locks_after_repeated_failures_even_with_right_password(client):
@@ -58,7 +60,9 @@ def test_lockout_is_per_account(client):
 def test_unknown_emails_lock_the_same_way(client):
     # Identical behaviour for unregistered emails reveals nothing about accounts.
     for _ in range(security.LOGIN_MAX_FAILURES - 1):
-        assert attempt(client, "wrong-password", "nobody@example.test").status_code == 401
+        assert (
+            attempt(client, "wrong-password", "nobody@example.test").status_code == 401
+        )
     assert attempt(client, "wrong-password", "nobody@example.test").status_code == 429
 
 
@@ -68,23 +72,35 @@ def test_password_reset_unlocks_and_stores_no_addresses(client):
     for _ in range(security.LOGIN_MAX_FAILURES):
         attempt(client, "wrong-password")
     with db() as c:
-        accounts = [r["account"] for r in c.execute("SELECT account FROM login_failures")]
+        accounts = [
+            r["account"] for r in c.execute("SELECT account FROM login_failures")
+        ]
         assert accounts == [security.digest(EMAIL)]
-        user_id = c.execute("SELECT id FROM users WHERE email=?", (EMAIL,)).fetchone()["id"]
+        user_id = c.execute("SELECT id FROM users WHERE email=?", (EMAIL,)).fetchone()[
+            "id"
+        ]
         token = security.issue_token(c, "reset", user_id=user_id)
     reset = client.post(
-        "/api/v1/auth/reset-password", json={"token": token, "password": "a-new-strong-password"}
+        "/api/v1/auth/reset-password",
+        json={"token": token, "password": "a-new-strong-password"},
     )
     assert reset.status_code == 200
     assert attempt(client, "a-new-strong-password").status_code == 200
 
 
 def request_from(ip, headers=()):
-    return Request({
-        "type": "http", "method": "GET", "path": "/", "scheme": "https",
-        "headers": [(k.encode(), v.encode()) for k, v in headers],
-        "server": ("localhost", 443), "client": (ip, 1234), "query_string": b"",
-    })
+    return Request(
+        {
+            "type": "http",
+            "method": "GET",
+            "path": "/",
+            "scheme": "https",
+            "headers": [(k.encode(), v.encode()) for k, v in headers],
+            "server": ("localhost", 443),
+            "client": (ip, 1234),
+            "query_string": b"",
+        }
+    )
 
 
 def test_client_ip_uses_vercel_header_only_on_vercel(monkeypatch):

@@ -31,7 +31,14 @@ router = APIRouter()
 
 @router.get("/api/v1/app-config")
 def app_config():
-    return {"demo": demo_enabled(), "public_dashboard": public_demo_dashboard(), "notice": DEMO_NOTICE if demo_enabled() else "", "login_email": "demo@knowra.example" if demo_enabled() else "", "auth_provider": "neon" if neon_login() else "local", "auth_url": os.getenv("NEON_AUTH_BASE_URL") if neon_login() else None}
+    return {
+        "demo": demo_enabled(),
+        "public_dashboard": public_demo_dashboard(),
+        "notice": DEMO_NOTICE if demo_enabled() else "",
+        "login_email": "demo@knowra.example" if demo_enabled() else "",
+        "auth_provider": "neon" if neon_login() else "local",
+        "auth_url": os.getenv("NEON_AUTH_BASE_URL") if neon_login() else None,
+    }
 
 
 @router.post("/api/v1/auth/demo")
@@ -42,7 +49,11 @@ def demo_entry(request: Request, response: Response, dashboard: bool = False):
     # Reuse the just-validated visitor; no extra browser authentication round trip.
     visitor = result["user"]
     visible = documents(visitor)
-    return {"user": me(visitor), "documents": visible, "analytics": analytics_summary(visitor, visible)}
+    return {
+        "user": me(visitor),
+        "documents": visible,
+        "analytics": analytics_summary(visitor, visible),
+    }
 
 
 @router.post("/api/v1/auth/register", status_code=201)
@@ -130,5 +141,8 @@ def me(user=Depends(current_user)):
         "retrieval": "Hybrid semantic + keyword" if model_name() else "Keyword",
         "embedding_model": model_name() or None,
         "demo": demo_enabled(),
-        "source_integrity": bool(os.getenv("NEON_FUNCTION_HELLO_BASE_URL") and os.getenv("KNOWRA_FUNCTION_SECRET")),
+        "source_integrity": bool(
+            os.getenv("NEON_FUNCTION_HELLO_BASE_URL")
+            and os.getenv("KNOWRA_FUNCTION_SECRET")
+        ),
     }

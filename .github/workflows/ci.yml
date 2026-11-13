@@ -12,15 +12,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
       - run: pip install -r apps/api/requirements-dev.txt
       - run: npm ci
       - run: npm run build
       - run: python scripts/check_publication.py
       - run: python -m ruff check apps/api/app apps/api/tests apps/api/migrations scripts
+      - run: python -m ruff format --check apps/api scripts
       - run: python -m pytest -q
       - run: for file in apps/api/app/static/*.js; do node --check "$file"; done
       - run: python scripts/evaluate.py --output evals/keyword-report.json
@@ -39,7 +40,7 @@ jobs:
           POSTGRES_USER: knowra
           POSTGRES_PASSWORD: test-only-password
           POSTGRES_DB: knowra
-        ports: ['5432:5432']
+        ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U knowra -d knowra"
           --health-interval 5s --health-timeout 5s --health-retries 12
@@ -49,7 +50,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - run: pip install -r apps/api/requirements.txt
       - run: python -m pytest -q
   container:
@@ -92,12 +93,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       EMBEDDING_MODEL: sentence-transformers/all-MiniLM-L6-v2
-      EMBEDDING_ALLOW_DOWNLOAD: 'true'
+      EMBEDDING_ALLOW_DOWNLOAD: "true"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
       - run: pip install -r apps/api/requirements.txt -r apps/api/requirements-semantic.txt
       - run: python scripts/evaluate.py --output evals/semantic-report.json --minimum-recall 0.8

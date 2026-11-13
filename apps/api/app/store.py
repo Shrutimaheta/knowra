@@ -84,7 +84,15 @@ def initialize():
     """Upgrade new and legacy databases without dropping existing identities or data."""
     config = migration_config()
     direct = os.getenv("DATABASE_URL_UNPOOLED")
-    migration_engine = engine_for(direct.replace("postgresql://", "postgresql+psycopg://", 1).replace("postgres://", "postgresql+psycopg://", 1)) if direct else engine()
+    migration_engine = (
+        engine_for(
+            direct.replace("postgresql://", "postgresql+psycopg://", 1).replace(
+                "postgres://", "postgresql+psycopg://", 1
+            )
+        )
+        if direct
+        else engine()
+    )
     with migration_engine.begin() as connection:
         config.attributes["connection"] = connection
         tables = inspect(connection).get_table_names()

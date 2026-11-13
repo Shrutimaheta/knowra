@@ -12,11 +12,18 @@ def upgrade():
         "external_identities",
         sa.Column("provider", sa.Text, primary_key=True),
         sa.Column("subject", sa.Text, primary_key=True),
-        sa.Column("user_id", sa.Text, sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "user_id",
+            sa.Text,
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
     )
     op.add_column("document_versions", sa.Column("original_key", sa.Text))
     op.add_column("document_versions", sa.Column("original_size", sa.Integer))
 
 
 def downgrade():
-    raise RuntimeError("Restore a matching backup; identity and source references must be preserved.")
+    raise RuntimeError(
+        "Restore a matching backup; identity and source references must be preserved."
+    )

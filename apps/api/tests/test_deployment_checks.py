@@ -24,8 +24,10 @@ def run_check(monkeypatch, records):
 
 
 def services():
-    return [{"Service": name, "State": "running", "Health": "healthy"}
-            for name in ("api", "worker", "db", "proxy", "parser", "clamav", "backup")]
+    return [
+        {"Service": name, "State": "running", "Health": "healthy"}
+        for name in ("api", "worker", "db", "proxy", "parser", "clamav", "backup")
+    ]
 
 
 def test_completed_migration_does_not_fail_operational_check(monkeypatch):

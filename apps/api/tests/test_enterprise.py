@@ -360,8 +360,12 @@ def test_semantic_search_preserves_private_document_boundary(client, monkeypatch
         ]
 
     monkeypatch.setattr("app.worker.encode", vectors)
-    monkeypatch.setattr("app.routes.conversations.query_vector", lambda query: vectors([query])[0])
-    monkeypatch.setattr("app.embeddings.query_vector", lambda query: vectors([query])[0])
+    monkeypatch.setattr(
+        "app.routes.conversations.query_vector", lambda query: vectors([query])[0]
+    )
+    monkeypatch.setattr(
+        "app.embeddings.query_vector", lambda query: vectors([query])[0]
+    )
     private = upload(client, "Confidential acquisition strategy.", visibility="private")
     upload(client, "Travel reimbursement policy.")
     result = client.post("/api/v1/search", json={"content": "acquisition"}).json()

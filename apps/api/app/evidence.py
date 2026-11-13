@@ -98,7 +98,9 @@ def highlight(pages, number, quote, data=None):
                 )
     boxes = boxes_for(entries, matched)
     if not boxes and os.getenv("APP_ENV") == "demo":
-        result["notice"] += " Extracted text is highlighted; live image OCR is disabled in this lightweight demo."
+        result["notice"] += (
+            " Extracted text is highlighted; live image OCR is disabled in this lightweight demo."
+        )
         return result
     if not boxes:
         # Older OCR versions have no saved geometry. Read only this source page
