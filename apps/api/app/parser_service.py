@@ -28,7 +28,8 @@ def supervise(payload):
                 "PATH": os.environ.get("PATH", ""),
                 "SYSTEMROOT": os.environ.get("SYSTEMROOT", ""),
                 "PYTHONPATH": str(Path(__file__).resolve().parents[1]),
-                "OPENBLAS_NUM_THREADS": "1", "OMP_NUM_THREADS": "2",
+                "OPENBLAS_NUM_THREADS": "1",
+                "OMP_NUM_THREADS": "2",
                 "OCR_MAX_PAGES": os.getenv("OCR_MAX_PAGES", "50"),
                 "PYTHONDONTWRITEBYTECODE": "1",
             }
@@ -36,14 +37,24 @@ def supervise(payload):
                 environment["PYTHONUSERBASE"] = site.getuserbase()
             result = subprocess.run(
                 [sys.executable, "-m", "app.parser_job", str(output)],
-                input=payload, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                env=environment, timeout=300, check=False,
+                input=payload,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                env=environment,
+                timeout=300,
+                check=False,
             )
-            if result.returncode or not output.exists() or output.stat().st_size > 32 * 1024 * 1024:
+            if (
+                result.returncode
+                or not output.exists()
+                or output.stat().st_size > 32 * 1024 * 1024
+            ):
                 raise HTTPException(422, "Document processing failed")
             return json.loads(output.read_text(encoding="utf-8"))
     except subprocess.TimeoutExpired:
-        raise HTTPException(422, "Document processing exceeded its time limit") from None
+        raise HTTPException(
+            422, "Document processing exceeded its time limit"
+        ) from None
     finally:
         slot.release()
 

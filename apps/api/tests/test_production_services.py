@@ -38,20 +38,31 @@ def test_scanner_uses_framed_stream_and_clean_result(monkeypatch):
     monkeypatch.setenv("CLAMAV_HOST", "private-scanner")
     monkeypatch.setattr(malware.socket, "create_connection", lambda *a, **k: connection)
     malware.scan(b"example content")
-    assert connection.sent == [b"zINSTREAM\0", b"\0\0\0\x0fexample content", b"\0\0\0\0"]
+    assert connection.sent == [
+        b"zINSTREAM\0",
+        b"\0\0\0\x0fexample content",
+        b"\0\0\0\0",
+    ]
 
 
-@pytest.mark.parametrize("reply,code", [(b"stream: Test-Signature FOUND\0", 400), (b"stream: ERROR\0", 503), (b"", 503)])
+@pytest.mark.parametrize(
+    "reply,code",
+    [(b"stream: Test-Signature FOUND\0", 400), (b"stream: ERROR\0", 503), (b"", 503)],
+)
 def test_scanner_failures_reject_before_parsing(client, monkeypatch, reply, code):
     register(client)
     monkeypatch.setenv("CLAMAV_HOST", "scanner")
-    monkeypatch.setattr(malware.socket, "create_connection", lambda *a, **k: Scanner(reply))
+    monkeypatch.setattr(
+        malware.socket, "create_connection", lambda *a, **k: Scanner(reply)
+    )
 
     def no_parse(*args):
         raise AssertionError("Rejected bytes must never enter a document parser")
 
     monkeypatch.setattr("app.routes.documents.validate", no_parse)
-    response = client.post("/api/v1/documents", files={"file": ("test.txt", b"unsafe content")})
+    response = client.post(
+        "/api/v1/documents", files={"file": ("test.txt", b"unsafe content")}
+    )
     assert response.status_code == code
     assert client.get("/api/v1/documents").json() == []
 
@@ -68,10 +79,14 @@ def test_production_cannot_silently_use_local_parser_or_skip_scanning(monkeypatc
 
 def test_parser_supervisor_runs_real_disposable_child():
     with TestClient(parser_service.app) as client:
-        response = client.post("/process", json={
-            "operation": "validate", "filename": "policy.txt",
-            "data": base64.b64encode(b"Annual leave is 24 days.").decode(),
-        })
+        response = client.post(
+            "/process",
+            json={
+                "operation": "validate",
+                "filename": "policy.txt",
+                "data": base64.b64encode(b"Annual leave is 24 days.").decode(),
+            },
+        )
         assert response.status_code == 200
         assert response.json() == {"pages": ["Annual leave is 24 days."]}
         invalid = client.post("/process", json={"operation": "arbitrary", "data": ""})
@@ -126,7 +141,9 @@ def test_worker_rechecks_files_and_permanently_rejects_malware(client, monkeypat
     assert job["status"] == "failed" and job["attempts"] == 1
 
 
-def test_operational_checks_detect_backlog_and_backup_age(client, monkeypatch, tmp_path):
+def test_operational_checks_detect_backlog_and_backup_age(
+    client, monkeypatch, tmp_path
+):
     register(client)
     monkeypatch.setenv("EAGER_INGESTION", "false")
     upload(client)

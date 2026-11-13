@@ -8,21 +8,46 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = {
-    ".gitignore", ".gitattributes", ".dockerignore", ".env.example",
-    "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "package.json",
-    "package-lock.json", "tsconfig.json", "pytest.ini", "ruff.toml",
-    "neon.ts", "source-integrity.ts", "render.yaml", "compose.yaml",
-    "compose.production.yaml", "compose.operations.yaml",
+    ".gitignore",
+    ".gitattributes",
+    ".dockerignore",
+    ".editorconfig",
+    ".prettierignore",
+    ".env.example",
+    "README.md",
+    "LICENSE",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "package.json",
+    "package-lock.json",
+    "tsconfig.json",
+    "pytest.ini",
+    "ruff.toml",
+    "neon.ts",
+    "source-integrity.ts",
+    "render.yaml",
+    "compose.yaml",
+    "compose.production.yaml",
+    "compose.operations.yaml",
 }
 PUBLIC_DOCS = {
-    "architecture.md", "deployment.md", "release-checklist.md",
-    "render-demo.md", "free-hosting.md", "neon.md", "demo-documents.md", "hosted-demo.md", "vercel.md",
+    "architecture.md",
+    "deployment.md",
+    "release-checklist.md",
+    "render-demo.md",
+    "free-hosting.md",
+    "neon.md",
+    "demo-documents.md",
+    "hosted-demo.md",
+    "vercel.md",
 }
 
 
 def allowed(name):
     path = Path(name)
-    if any(part in {"data", "__pycache__", "node_modules", ".git"} for part in path.parts):
+    if any(
+        part in {"data", "__pycache__", "node_modules", ".git"} for part in path.parts
+    ):
         return False
     if name in ROOT_FILES or name in {"evals/retrieval.json", "evals/demo-corpus.json"}:
         return True
@@ -37,11 +62,19 @@ def allowed(name):
     if name.startswith("web/"):
         return path.suffix == ".ts"
     if name.startswith("infrastructure/"):
-        return path.suffix in {".sh", ".service", ".timer"} or path.name in {"Dockerfile", "Caddyfile"}
+        return path.suffix in {".sh", ".service", ".timer"} or path.name in {
+            "Dockerfile",
+            "Caddyfile",
+        }
     if name.startswith("apps/api/"):
         if name in {"apps/api/vercel.json", "apps/api/vercel_entry.py"}:
             return True
-        if path.name in {"Dockerfile", "Dockerfile.demo", "alembic.ini", ".dockerignore"}:
+        if path.name in {
+            "Dockerfile",
+            "Dockerfile.demo",
+            "alembic.ini",
+            ".dockerignore",
+        }:
             return len(path.parts) == 3
         if path.name.startswith("requirements") and path.suffix == ".txt":
             return len(path.parts) == 3
@@ -76,8 +109,13 @@ def private_values():
             continue
         key, value = match.groups()
         value = value.strip().strip("\"'")
-        sensitive = any(word in key for word in ("SECRET", "PASSWORD", "API_KEY", "DATABASE_URL", "ACCESS_KEY"))
-        sensitive = sensitive or key.startswith("NEON_") and key.endswith(("URL", "URI"))
+        sensitive = any(
+            word in key
+            for word in ("SECRET", "PASSWORD", "API_KEY", "DATABASE_URL", "ACCESS_KEY")
+        )
+        sensitive = (
+            sensitive or key.startswith("NEON_") and key.endswith(("URL", "URI"))
+        )
         if sensitive and len(value) >= 12 and "replace_with" not in value:
             result.append(value.encode())
     return result
@@ -98,8 +136,11 @@ def main():
     secrets = private_values()
     context = ROOT / ".neon"
     if context.exists():
-        secrets += [value.encode() for value in json.loads(context.read_text(encoding="utf-8-sig")).values()
-                    if isinstance(value, str) and len(value) >= 12]
+        secrets += [
+            value.encode()
+            for value in json.loads(context.read_text(encoding="utf-8-sig")).values()
+            if isinstance(value, str) and len(value) >= 12
+        ]
     problems = []
     total = 0
     for name in names:
@@ -119,8 +160,12 @@ def main():
         print(f"FAIL: {name}: {reason}")
     if problems:
         return 1
-    print(f"PUBLICATION CHECK PASSED: {len(names)} staged files, {total:,} bytes; allowlist and credential checks passed.")
-    print("Excluded: private env/config, uploaded files, databases, backups, screenshots, caches and local reports.")
+    print(
+        f"PUBLICATION CHECK PASSED: {len(names)} staged files, {total:,} bytes; allowlist and credential checks passed."
+    )
+    print(
+        "Excluded: private env/config, uploaded files, databases, backups, screenshots, caches and local reports."
+    )
     return 0
 
 

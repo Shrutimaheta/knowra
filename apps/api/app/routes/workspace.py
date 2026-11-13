@@ -140,15 +140,33 @@ def seed(background: BackgroundTasks, user=Depends(admin)):
                 background.add_task(run_once, version)
             created += 1
         for title, category, filenames in BUSINESS_DOCUMENTS:
-            if c.execute("SELECT id FROM documents WHERE org=? AND title=?", (user["org"], title)).fetchone():
+            if c.execute(
+                "SELECT id FROM documents WHERE org=? AND title=?", (user["org"], title)
+            ).fetchone():
                 continue
             document_id = uid()
             c.execute(
                 "INSERT INTO documents (id,org,owner,title,category,visibility,status,content,created,version) VALUES (?,?,?,?,?,?,'queued','',?,?)",
-                (document_id, user["org"], user["id"], title, category, "workspace", now(), len(filenames)),
+                (
+                    document_id,
+                    user["org"],
+                    user["id"],
+                    title,
+                    category,
+                    "workspace",
+                    now(),
+                    len(filenames),
+                ),
             )
             for number, filename in enumerate(filenames, 1):
-                version = enqueue(c, document_id, filename, (BUSINESS_DIRECTORY / filename).read_bytes(), [], number)
+                version = enqueue(
+                    c,
+                    document_id,
+                    filename,
+                    (BUSINESS_DIRECTORY / filename).read_bytes(),
+                    [],
+                    number,
+                )
                 if os.getenv("EAGER_INGESTION", "false") == "true":
                     background.add_task(run_once, version)
             created += 1
@@ -175,4 +193,3 @@ def readiness():
         "pending_jobs": pending,
         "failed_jobs": failed,
     }
-

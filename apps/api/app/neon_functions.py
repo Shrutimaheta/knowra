@@ -12,10 +12,21 @@ def source_integrity(document, version, user):
     if not url or not secret:
         raise HTTPException(503, "Source verification is not configured.")
     try:
-        result = httpx.post(url, headers={"X-Secret": secret},
-                            json={"document": document, "version": version, "org": user["org"], "user": user["id"]},
-                            follow_redirects=False, timeout=30)
+        result = httpx.post(
+            url,
+            headers={"X-Secret": secret},
+            json={
+                "document": document,
+                "version": version,
+                "org": user["org"],
+                "user": user["id"],
+            },
+            follow_redirects=False,
+            timeout=30,
+        )
         result.raise_for_status()
         return result.json()
     except (httpx.HTTPError, ValueError):
-        raise HTTPException(503, "Source verification is temporarily unavailable.") from None
+        raise HTTPException(
+            503, "Source verification is temporarily unavailable."
+        ) from None

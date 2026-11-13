@@ -96,6 +96,7 @@ python -m pip install -r apps/api/requirements-dev.txt
 npm ci
 npm run build
 python -m ruff check apps/api/app apps/api/tests apps/api/migrations scripts
+python -m ruff format --check apps/api scripts
 python -m pytest -q
 ```
 

@@ -1,0 +1,5 @@
+apps/api/app/static/neon-auth.js
+apps/api/app/static/index.html
+package-lock.json
+node_modules
+output

@@ -13,5 +13,13 @@ if __name__ == "__main__":
     # Curated fixtures use their own reviewer login and database-backed originals.
     os.environ["AUTH_PROVIDER"] = "local"
     os.environ["ORIGINAL_STORAGE"] = "database"
-    os.environ["PUBLIC_URL"] = os.getenv("RENDER_EXTERNAL_URL", os.getenv("PUBLIC_URL", "")).rstrip("/")
-    uvicorn.run("app.main:app", host="0.0.0.0", port=int(os.getenv("PORT", "8000")), workers=1, access_log=False)
+    os.environ["PUBLIC_URL"] = os.getenv(
+        "RENDER_EXTERNAL_URL", os.getenv("PUBLIC_URL", "")
+    ).rstrip("/")
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", "8000")),
+        workers=1,
+        access_log=False,
+    )

@@ -11,4 +11,8 @@ if __name__ == "__main__":
     executable = shutil.which("neon.cmd") or shutil.which("neon")
     if not executable:
         raise SystemExit("Install the Neon CLI before deployment.")
-    raise SystemExit(subprocess.run([executable, "deploy", "--env", ".env", *sys.argv[1:]]).returncode)
+    raise SystemExit(
+        subprocess.run(
+            [executable, "deploy", "--env", ".env", *sys.argv[1:]]
+        ).returncode
+    )

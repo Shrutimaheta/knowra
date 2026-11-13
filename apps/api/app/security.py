@@ -52,7 +52,9 @@ def verify_password(password, stored):
 LOGIN_MAX_FAILURES = 5
 LOGIN_WINDOW_SECONDS = 15 * 60
 LOGIN_LOCK_SECONDS = 15 * 60
-LOCKED_MESSAGE = "Too many failed sign-in attempts. Try again in 15 minutes or reset your password."
+LOCKED_MESSAGE = (
+    "Too many failed sign-in attempts. Try again in 15 minutes or reset your password."
+)
 
 
 def login_locked(c, email):

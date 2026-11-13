@@ -10,7 +10,12 @@ down_revision = "0006"
 def upgrade():
     op.create_table(
         "demo_visitors",
-        sa.Column("user_id", sa.Text, sa.ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+        sa.Column(
+            "user_id",
+            sa.Text,
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            primary_key=True,
+        ),
         sa.Column("expires", sa.Float, nullable=False),
     )
     op.create_index("demo_visitors_expiry", "demo_visitors", ["expires"])

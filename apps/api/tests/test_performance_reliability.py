@@ -14,7 +14,9 @@ def test_pdf_upload_defers_extraction_and_worker_still_indexes(client, monkeypat
     register(client)
     with pymupdf.open() as pdf:
         page = pdf.new_page()
-        page.insert_text((50, 50), "Internet Control Message Protocol (ICMP) reports errors.")
+        page.insert_text(
+            (50, 50), "Internet Control Message Protocol (ICMP) reports errors."
+        )
         data = pdf.tobytes()
 
     def unexpected(*args, **kwargs):
@@ -101,11 +103,18 @@ def test_slow_request_bookkeeping_does_not_block_event_loop(monkeypatch):
         return 1
 
     monkeypatch.setattr("app.main.request_count", slow_count)
-    request = Request({
-        "type": "http", "method": "GET", "path": "/api/v1/documents",
-        "scheme": "http", "headers": [], "server": ("localhost", 80),
-        "client": ("127.0.0.1", 1234), "query_string": b"",
-    })
+    request = Request(
+        {
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/documents",
+            "scheme": "http",
+            "headers": [],
+            "server": ("localhost", 80),
+            "client": ("127.0.0.1", 1234),
+            "query_string": b"",
+        }
+    )
 
     async def next_request(request):
         return Response("ok")

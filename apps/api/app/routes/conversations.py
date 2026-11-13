@@ -49,7 +49,10 @@ def search(body: Question, user=Depends(current_user)):
         select = "SELECT ch.id,ch.document,ch.content,ch.page,ch.version_id,ch.embedding,ch.embedding_model,d.title,v.number AS version"
         if engine().dialect.name == "postgresql":
             # Database-side keyword/vector candidates share the exact permission filter.
-            keyword_query = " | ".join("'" + term.replace("'", "''") + "'" for term in list(dict.fromkeys(tokens(query)))[:64])
+            keyword_query = " | ".join(
+                "'" + term.replace("'", "''") + "'"
+                for term in list(dict.fromkeys(tokens(query)))[:64]
+            )
             rows = [
                 dict(r)
                 for r in c.execute(
@@ -97,8 +100,17 @@ def conversations(user=Depends(current_user)):
 def create_conversation(user=Depends(current_user)):
     conversation_id = uid()
     with db() as c:
-        if demo_enabled() and c.execute("SELECT COUNT(*) AS n FROM conversations WHERE user_id=?", (user["id"],)).fetchone()["n"] >= 30:
-            raise HTTPException(429, "This workspace allows 30 conversations. Delete an old conversation to continue.")
+        if (
+            demo_enabled()
+            and c.execute(
+                "SELECT COUNT(*) AS n FROM conversations WHERE user_id=?", (user["id"],)
+            ).fetchone()["n"]
+            >= 30
+        ):
+            raise HTTPException(
+                429,
+                "This workspace allows 30 conversations. Delete an old conversation to continue.",
+            )
         c.execute(
             "INSERT INTO conversations VALUES (?,?,?,?,?)",
             (conversation_id, user["org"], user["id"], "New conversation", now()),
@@ -119,7 +131,8 @@ def messages(conversation_id: str, user=Depends(current_user)):
     with db() as c:
         check_conversation(c, conversation_id, user)
         visible = {
-            row["id"] for row in c.execute(
+            row["id"]
+            for row in c.execute(
                 "SELECT id FROM documents WHERE org=? AND (visibility='workspace' OR owner=?)",
                 (user["org"], user["id"]),
             )
@@ -148,8 +161,17 @@ def generate_reply(conversation_id, body, user):
     run_token = uid()
     with db() as c:
         check_conversation(c, conversation_id, user)
-        if demo_enabled() and c.execute("SELECT COUNT(*) AS n FROM messages m JOIN conversations c ON c.id=m.conversation WHERE c.user_id=?", (user["id"],)).fetchone()["n"] >= 300:
-            raise HTTPException(429, "Message limit reached. Delete an old conversation to continue.")
+        if (
+            demo_enabled()
+            and c.execute(
+                "SELECT COUNT(*) AS n FROM messages m JOIN conversations c ON c.id=m.conversation WHERE c.user_id=?",
+                (user["id"],),
+            ).fetchone()["n"]
+            >= 300
+        ):
+            raise HTTPException(
+                429, "Message limit reached. Delete an old conversation to continue."
+            )
         c.execute("DELETE FROM chat_runs WHERE expires<?", (time.time(),))
         try:
             c.execute(
@@ -209,7 +231,9 @@ def generate_reply(conversation_id, body, user):
                     raise HTTPException(
                         409, "Wait for this document to finish indexing."
                     )
-                if (version["original"] is None and not version["original_key"]) or not visual_file(version["filename"]):
+                if (
+                    version["original"] is None and not version["original_key"]
+                ) or not visual_file(version["filename"]):
                     raise HTTPException(
                         422, "Visual analysis requires an original PDF or image."
                     )
@@ -420,4 +444,3 @@ def feedback(message_id: str, body: Feedback, user=Depends(current_user)):
         check_conversation(c, row["conversation"], user)
         c.execute("UPDATE messages SET feedback=? WHERE id=?", (body.value, message_id))
     return {"ok": True}
-

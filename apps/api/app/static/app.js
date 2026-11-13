@@ -1,5 +1,7 @@
-function visualFile(name) { return /\.(pdf|png|jpe?g|webp)$/i.test(name); }
-"use strict";
+function visualFile(name) {
+  return /\.(pdf|png|jpe?g|webp)$/i.test(name);
+}
+("use strict");
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
   String(s ?? "").replace(
@@ -105,12 +107,24 @@ $("#auth-form").onsubmit = async (e) => {
   try {
     if (neonAuthClient) {
       const result = registering
-        ? await neonAuthClient.signUp.email({ email: form.email, password: form.password, name: form.name })
-        : await neonAuthClient.signIn.email({ email: form.email, password: form.password });
-      if (result.error) throw Error(result.error.message || "Neon sign-in failed.");
+        ? await neonAuthClient.signUp.email({
+            email: form.email,
+            password: form.password,
+            name: form.name,
+          })
+        : await neonAuthClient.signIn.email({
+            email: form.email,
+            password: form.password,
+          });
+      if (result.error)
+        throw Error(result.error.message || "Neon sign-in failed.");
       const token = await neonAuthClient.token();
-      if (token.error || !token.data?.token) throw Error("Complete Neon email verification, then sign in.");
-      await post("/auth/neon", { token: token.data.token, workspace: form.workspace || "My knowledge workspace" });
+      if (token.error || !token.data?.token)
+        throw Error("Complete Neon email verification, then sign in.");
+      await post("/auth/neon", {
+        token: token.data.token,
+        workspace: form.workspace || "My knowledge workspace",
+      });
     } else {
       await post("/auth/" + (registering ? "register" : "login"), form);
     }
@@ -178,21 +192,25 @@ function bindActions() {
             b.dataset.evidence,
           )),
     );
-  document.querySelectorAll("[data-conflicts]").forEach(b => b.onclick = () => conflictModal());
-  document.querySelectorAll("[data-comparison-demo]").forEach(b => b.onclick = () => loadComparisonDemo(b));
-  document.querySelectorAll("[data-compare-doc]").forEach(b => b.onclick = () => compareModal(b.dataset.compareDoc));
+  document
+    .querySelectorAll("[data-conflicts]")
+    .forEach((b) => (b.onclick = () => conflictModal()));
+  document
+    .querySelectorAll("[data-comparison-demo]")
+    .forEach((b) => (b.onclick = () => loadComparisonDemo(b)));
+  document
+    .querySelectorAll("[data-compare-doc]")
+    .forEach((b) => (b.onclick = () => compareModal(b.dataset.compareDoc)));
   document
     .querySelectorAll("[data-upload]")
     .forEach((b) => (b.onclick = uploadModal));
-  document
-    .querySelectorAll("[data-seed]")
-    .forEach((b) => {
-      b.classList.toggle("hidden", Boolean(user?.demo));
-      b.onclick = seedDemo;
-    });
+  document.querySelectorAll("[data-seed]").forEach((b) => {
+    b.classList.toggle("hidden", Boolean(user?.demo));
+    b.onclick = seedDemo;
+  });
 }
 async function start(initial = null) {
-  user = initial?.user || await api("/users/me");
+  user = initial?.user || (await api("/users/me"));
   $("#auth").classList.add("hidden");
   $("#app").classList.remove("hidden");
   $("#workspace-name").textContent = user.workspace;
@@ -202,7 +220,8 @@ async function start(initial = null) {
   $("#user-role").textContent = user.role;
   $("[data-page=settings]").classList.toggle("hidden", Boolean(user.demo));
   $("#logout").classList.toggle("hidden", publicDemo);
-  $("#mode-label").textContent = user.provider === "gemini" ? "Gemini / " + user.mode : user.mode;
+  $("#mode-label").textContent =
+    user.provider === "gemini" ? "Gemini / " + user.mode : user.mode;
   await navigate(page, initial);
   clearInterval(pollTimer);
   pollTimer = setInterval(async () => {
@@ -236,7 +255,7 @@ async function navigate(next, initial = null) {
   $("#content").innerHTML =
     '<div class="loading">Gathering your workspace…</div>';
   try {
-    docs = initial?.documents || await api("/documents");
+    docs = initial?.documents || (await api("/documents"));
     $("#doc-count").textContent = docs.length;
     await {
       overview: renderOverview,
@@ -261,7 +280,7 @@ function docRow(d) {
   return `<div class="document-row"><span class="file-icon">▤</span><div><button class="link-button" data-source="${d.id}">${esc(d.title)}</button><small>${esc(d.category)} · ${date(d.created)}</small></div><span class="status ${d.status}">${esc(d.status)}</span></div>`;
 }
 async function renderOverview(initialAnalytics) {
-  const a = initialAnalytics || await api("/analytics");
+  const a = initialAnalytics || (await api("/analytics"));
   const greet =
     new Date().getHours() < 12
       ? "Good morning"
@@ -361,11 +380,24 @@ function uploadModal() {
 }
 function sourcePageHTML(text, i, version, id, selected) {
   const meta = (version.layout_meta || [])[i];
-  const tables = (meta?.tables || []).map(rows => `<div class="table-scroll"><table>${rows.map((row, n) => `<tr>${row.map(cell => n === 0 ? `<th>${esc(cell || "")}</th>` : `<td>${esc(cell || "")}</td>`).join("")}</tr>`).join("")}</table></div>`).join("");
-  const preview = visualFile(selected.filename) ? `<details><summary>View original page</summary><img loading="lazy" style="width:100%;height:auto" alt="Original page ${i+1}" src="/api/v1/documents/${id}/versions/${selected.id}/pages/${i+1}/image"></details>` : "";
-  return `<section id="source-page-${i+1}"><strong>Page ${i+1}${meta ? ` / ${esc(meta.method)}` : ""}</strong>${(meta?.warnings || []).map(w => `<p class="muted">${esc(w)}</p>`).join("")}${tables}<p class="extracted-page-text">${esc(text)}</p>${preview}</section>`;
+  const tables = (meta?.tables || [])
+    .map(
+      (rows) =>
+        `<div class="table-scroll"><table>${rows.map((row, n) => `<tr>${row.map((cell) => (n === 0 ? `<th>${esc(cell || "")}</th>` : `<td>${esc(cell || "")}</td>`)).join("")}</tr>`).join("")}</table></div>`,
+    )
+    .join("");
+  const preview = visualFile(selected.filename)
+    ? `<details><summary>View original page</summary><img loading="lazy" style="width:100%;height:auto" alt="Original page ${i + 1}" src="/api/v1/documents/${id}/versions/${selected.id}/pages/${i + 1}/image"></details>`
+    : "";
+  return `<section id="source-page-${i + 1}"><strong>Page ${i + 1}${meta ? ` / ${esc(meta.method)}` : ""}</strong>${(meta?.warnings || []).map((w) => `<p class="muted">${esc(w)}</p>`).join("")}${tables}<p class="extracted-page-text">${esc(text)}</p>${preview}</section>`;
 }
-async function viewDocument(id, selectedVersion, sourcePage, evidence, returnToReview) {
+async function viewDocument(
+  id,
+  selectedVersion,
+  sourcePage,
+  evidence,
+  returnToReview,
+) {
   try {
     const [d, versions] = await Promise.all([
       api("/documents/" + id),
@@ -382,7 +414,8 @@ async function viewDocument(id, selectedVersion, sourcePage, evidence, returnToR
       `<div class="eyebrow">SOURCE DOCUMENT · ${esc(d.category)}</div><h2>${esc(d.title)}</h2><div class="toolbar">${returnToReview ? '<button class="secondary" id="return-to-review">Back to review</button>' : ""}<select id="source-version" aria-label="Source version">${versions.map((v) => `<option value="${v.id}" ${v.id === selected.id ? "selected" : ""}>Version ${v.number} · ${esc(v.status)}</option>`).join("")}</select>${user.role === "owner" || user.role === "admin" ? '<button class="secondary" id="reindex-source">Reindex for search</button>' : ""}${versions.length > 1 ? `<button class="secondary" id="compare-source">Compare versions</button>` : ""}<a class="secondary" href="/api/v1/documents/${id}/versions/${selected.id}/original" target="_blank" rel="noopener">Open original ↗</a></div><span class="pill">${esc(d.visibility)} · SHA-256 ${esc(version.checksum.slice(0, 16))}…</span><div id="evidence-panel" data-source-key="${id}/${selected.id}"></div><div class="source-text">${version.pages.map((text, i) => sourcePageHTML(text, i, version, id, selected)).join("")}</div>${editable ? `<details><summary>Add a new version</summary><p class="muted">Previous versions and citations remain available.</p><form id="version-form"><input aria-label="New document version" type="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.md,.csv" required><button class="primary">Upload version</button><div id="version-error" class="error"></div></form></details>` : ""}`,
     );
     if ($("#return-to-review")) $("#return-to-review").onclick = returnToReview;
-    if ($("#compare-source")) $("#compare-source").onclick = () => compareModal(id);
+    if ($("#compare-source"))
+      $("#compare-source").onclick = () => compareModal(id);
     if (user.source_integrity) {
       const button = document.createElement("button");
       button.className = "secondary";
@@ -390,14 +423,30 @@ async function viewDocument(id, selectedVersion, sourcePage, evidence, returnToR
       button.onclick = async () => {
         button.disabled = true;
         try {
-          const result = await api(`/documents/${id}/versions/${selected.id}/integrity`);
-          toast(result.verified ? "Original verified: its checksum matches this source version." : "The original could not be verified. Check the source.");
-        } catch (error) { toast(error.message); }
-        finally { button.disabled = false; }
+          const result = await api(
+            `/documents/${id}/versions/${selected.id}/integrity`,
+          );
+          toast(
+            result.verified
+              ? "Original verified: its checksum matches this source version."
+              : "The original could not be verified. Check the source.",
+          );
+        } catch (error) {
+          toast(error.message);
+        } finally {
+          button.disabled = false;
+        }
       };
       $("#modal-content .toolbar").append(button);
     }
-    if (evidence && sourcePage) showEvidence(id, selected.id, Number(sourcePage), evidence, version.pages[Number(sourcePage)-1]);
+    if (evidence && sourcePage)
+      showEvidence(
+        id,
+        selected.id,
+        Number(sourcePage),
+        evidence,
+        version.pages[Number(sourcePage) - 1],
+      );
     if ($("#reindex-source"))
       $("#reindex-source").onclick = async () => {
         try {
@@ -446,7 +495,12 @@ async function renderChat() {
       "A thoughtful answer starts with the right evidence.",
       `<span class="pill">${user.provider === "gemini" ? "Gemini / " : ""}${esc(user.mode)}</span>`,
     ) +
-    `<div class="chat-layout"><aside class="conversation-list"><button id="new-chat" class="primary">+ New conversation</button>${conversations.map((c) => `<button class="conversation-button ${c.id === activeConversation ? "selected" : ""}" data-conversation="${c.id}">${esc(c.title)}</button>`).join("")}</aside><section class="chat-main"><div id="indexing-notice" class="indexing-notice hidden" role="status"></div><div class="messages" id="messages"></div><button class="secondary" id="chat-upload" type="button">+ Upload image or document</button><details class="visual-options"><summary>Ask about a diagram or table visually</summary><p class="muted">Optional: sends one selected page image to your configured AI provider. OCR and ordinary questions stay local until text synthesis.</p><label><input id="visual-enabled" type="checkbox"> Use a page image for this question</label><label>PDF or image<select id="visual-document"><option value="">Choose a ready PDF or image</option>${docs.filter(d => d.status === "ready" && visualFile(d.title)).map(d => `<option value="${d.id}">${esc(d.title)}</option>`).join("")}</select></label><label>Page<input id="visual-page" type="number" min="1" max="300" value="1"></label></details><form class="composer" id="chat-form"><textarea id="question" aria-label="Your question" placeholder="What would you like to know?" maxlength="3000" required rows="2"></textarea><button class="secondary hidden" id="cancel-answer" type="button">Cancel</button><button class="primary" id="send-question" type="submit" aria-label="Send question">↗</button></form><div class="composer-note">${user.mode === "Evidence only" ? "Evidence-only mode returns source passages. Configure an AI key on the server for synthesis." : "AI answers may contain mistakes. Check the linked source documents."}</div></section></div>`;
+    `<div class="chat-layout"><aside class="conversation-list"><button id="new-chat" class="primary">+ New conversation</button>${conversations.map((c) => `<button class="conversation-button ${c.id === activeConversation ? "selected" : ""}" data-conversation="${c.id}">${esc(c.title)}</button>`).join("")}</aside><section class="chat-main"><div id="indexing-notice" class="indexing-notice hidden" role="status"></div><div class="messages" id="messages"></div><button class="secondary" id="chat-upload" type="button">+ Upload image or document</button><details class="visual-options"><summary>Ask about a diagram or table visually</summary><p class="muted">Optional: sends one selected page image to your configured AI provider. OCR and ordinary questions stay local until text synthesis.</p><label><input id="visual-enabled" type="checkbox"> Use a page image for this question</label><label>PDF or image<select id="visual-document"><option value="">Choose a ready PDF or image</option>${docs
+      .filter((d) => d.status === "ready" && visualFile(d.title))
+      .map((d) => `<option value="${d.id}">${esc(d.title)}</option>`)
+      .join(
+        "",
+      )}</select></label><label>Page<input id="visual-page" type="number" min="1" max="300" value="1"></label></details><form class="composer" id="chat-form"><textarea id="question" aria-label="Your question" placeholder="What would you like to know?" maxlength="3000" required rows="2"></textarea><button class="secondary hidden" id="cancel-answer" type="button">Cancel</button><button class="primary" id="send-question" type="submit" aria-label="Send question">↗</button></form><div class="composer-note">${user.mode === "Evidence only" ? "Evidence-only mode returns source passages. Configure an AI key on the server for synthesis." : "AI answers may contain mistakes. Check the linked source documents."}</div></section></div>`;
   $("#chat-upload").onclick = uploadModal;
   $("#chat-upload").classList.toggle("hidden", Boolean(user.demo));
   $("#new-chat").onclick = () => {
@@ -492,23 +546,27 @@ async function renderChat() {
 function updateIndexingNotice() {
   const visualSelect = $("#visual-document");
   if (visualSelect) {
-    const ready = docs.filter(d => d.status === "ready" && visualFile(d.title));
-    const signature = ready.map(d => d.id + d.title).join("|");
+    const ready = docs.filter(
+      (d) => d.status === "ready" && visualFile(d.title),
+    );
+    const signature = ready.map((d) => d.id + d.title).join("|");
     if (visualSelect.dataset.ready !== signature) {
       const selected = visualSelect.value;
-      visualSelect.innerHTML = `<option value="">Choose a ready PDF or image</option>${ready.map(d => `<option value="${d.id}">${esc(d.title)}</option>`).join("")}`;
-      if (ready.some(d => d.id === selected)) visualSelect.value = selected;
+      visualSelect.innerHTML = `<option value="">Choose a ready PDF or image</option>${ready.map((d) => `<option value="${d.id}">${esc(d.title)}</option>`).join("")}`;
+      if (ready.some((d) => d.id === selected)) visualSelect.value = selected;
       visualSelect.dataset.ready = signature;
     }
   }
   const notice = $("#indexing-notice");
   if (!notice) return;
-  const pending = docs.filter(d => d.status === "processing").length;
+  const pending = docs.filter((d) => d.status === "processing").length;
   notice.classList.toggle("hidden", pending === 0);
-  notice.textContent = pending ? `${pending} document(s) are being prepared. Wait for Ready in the Knowledge library before asking about them.` : "";
+  notice.textContent = pending
+    ? `${pending} document(s) are being prepared. Wait for Ready in the Knowledge library before asking about them.`
+    : "";
 }
 function messageHTML(m) {
-  return `<article class="message ${m.role}" data-message="${esc(m.id || "")}"><div class="message-label">${m.role === "user" ? "You" : m.model === "extractive" ? "Source excerpts" : "✧ Knowra"}</div><div class="message-body">${esc(m.content)}</div>${m.citations?.length ? `<div class="sources">${m.citations.map((s, i) => `<button class="source-chip" data-source="${s.document}" data-version="${s.version_id || ""}" data-source-page="${s.page}" data-evidence="${esc((s.content || "").slice(0,4000))}">[${s.citation_number || i + 1}] ${esc(s.title)} · v${s.version || 1} · p.${s.page}</button>`).join("")}</div>` : ""}${m.role === "assistant" ? `<div class="feedback"><button data-feedback="${m.id}" data-value="1">${m.feedback === 1 ? "✓ Helpful" : "Helpful"}</button><button data-feedback="${m.id}" data-value="-1">${m.feedback === -1 ? "✓ Saved" : "Needs improvement"}</button></div>` : ""}</article>`;
+  return `<article class="message ${m.role}" data-message="${esc(m.id || "")}"><div class="message-label">${m.role === "user" ? "You" : m.model === "extractive" ? "Source excerpts" : "✧ Knowra"}</div><div class="message-body">${esc(m.content)}</div>${m.citations?.length ? `<div class="sources">${m.citations.map((s, i) => `<button class="source-chip" data-source="${s.document}" data-version="${s.version_id || ""}" data-source-page="${s.page}" data-evidence="${esc((s.content || "").slice(0, 4000))}">[${s.citation_number || i + 1}] ${esc(s.title)} · v${s.version || 1} · p.${s.page}</button>`).join("")}</div>` : ""}${m.role === "assistant" ? `<div class="feedback"><button data-feedback="${m.id}" data-value="1">${m.feedback === 1 ? "✓ Helpful" : "Helpful"}</button><button data-feedback="${m.id}" data-value="-1">${m.feedback === -1 ? "✓ Saved" : "Needs improvement"}</button></div>` : ""}</article>`;
 }
 function bindMessageActions() {
   bindActions();
@@ -532,7 +590,10 @@ function scrollMessages() {
 }
 async function sendQuestion(e) {
   e.preventDefault();
-  if ($("#visual-enabled")?.checked && !$("#visual-document").value) { toast("Choose a ready PDF or image for visual analysis."); return; }
+  if ($("#visual-enabled")?.checked && !$("#visual-document").value) {
+    toast("Choose a ready PDF or image for visual analysis.");
+    return;
+  }
   if (busy) return;
   const text = $("#question").value.trim();
   if (!text) return;
@@ -560,7 +621,15 @@ async function sendQuestion(e) {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: text, ...($("#visual-enabled")?.checked ? { visual_document_id: $("#visual-document").value, visual_page: Number($("#visual-page").value) } : {}) }),
+        body: JSON.stringify({
+          content: text,
+          ...($("#visual-enabled")?.checked
+            ? {
+                visual_document_id: $("#visual-document").value,
+                visual_page: Number($("#visual-page").value),
+              }
+            : {}),
+        }),
         signal: streamController.signal,
       },
     );
@@ -594,11 +663,14 @@ async function sendQuestion(e) {
             scrollMessages();
           }
           if (event.type === "citations") {
-            $("#stream-answer .message-label").textContent = event.citations.length ? "Sources found - generating answer..." : "Checking available evidence...";
+            $("#stream-answer .message-label").textContent = event.citations
+              .length
+              ? "Sources found - generating answer..."
+              : "Checking available evidence...";
             $("#stream-answer .sources").innerHTML = event.citations
               .map(
                 (source, i) =>
-                  `<button class="source-chip" data-source="${source.document}" data-version="${source.version_id || ""}" data-source-page="${source.page}" data-evidence="${esc((source.content || "").slice(0,4000))}">[${source.citation_number || i + 1}] ${esc(source.title)} · v${source.version || 1} · p.${source.page}</button>`,
+                  `<button class="source-chip" data-source="${source.document}" data-version="${source.version_id || ""}" data-source-page="${source.page}" data-evidence="${esc((source.content || "").slice(0, 4000))}">[${source.citation_number || i + 1}] ${esc(source.title)} · v${source.version || 1} · p.${source.page}</button>`,
               )
               .join("");
             bindActions();
@@ -805,7 +877,8 @@ function demoEntryError(message) {
   $("#auth").classList.add("hidden");
   $("#app").classList.add("hidden");
   $("#demo-loading").classList.remove("hidden");
-  $("#demo-loading-message").textContent = "The workspace is temporarily unavailable. " + message;
+  $("#demo-loading-message").textContent =
+    "The workspace is temporarily unavailable. " + message;
   $("#demo-retry").classList.remove("hidden");
 }
 async function enterPublicDemo() {
@@ -819,7 +892,9 @@ async function enterPublicDemo() {
     activeConversation = null;
     await start(initial);
     $("#demo-loading").classList.add("hidden");
-  } catch (error) { demoEntryError(error.message); }
+  } catch (error) {
+    demoEntryError(error.message);
+  }
 }
 $("#demo-retry").onclick = () => initializeApp();
 async function initializeApp() {
@@ -833,7 +908,8 @@ async function initializeApp() {
       neonAuthClient = window.createKnowraNeonAuth(config.auth_url);
       $("#forgot-password").classList.add("hidden");
       const existing = await neonAuthClient.token();
-      if (existing.data?.token) await post("/auth/neon", { token: existing.data.token });
+      if (existing.data?.token)
+        await post("/auth/neon", { token: existing.data.token });
     }
     if (config.demo) {
       if (config.public_dashboard) {
@@ -843,13 +919,20 @@ async function initializeApp() {
       }
       if (registering) $("#auth-toggle").click();
       $("#auth-title").textContent = "Welcome to Knowra";
-      $("#auth-subtitle").textContent = "Use the reviewer password supplied by the workspace owner.";
+      $("#auth-subtitle").textContent =
+        "Use the reviewer password supplied by the workspace owner.";
       $("#auth-form [name=email]").value = config.login_email;
-      document.querySelectorAll(".auth-switch").forEach(el => el.classList.add("hidden"));
-      $(".privacy-note").textContent = "Shared fictional workspace. Do not enter private information.";
+      document
+        .querySelectorAll(".auth-switch")
+        .forEach((el) => el.classList.add("hidden"));
+      $(".privacy-note").textContent =
+        "Shared fictional workspace. Do not enter private information.";
     }
   } catch (error) {
-    if (publicDemo) { demoEntryError(error.message); return; }
+    if (publicDemo) {
+      demoEntryError(error.message);
+      return;
+    }
   }
   if (!(await handleAccountLink())) start().catch(() => showAuth());
 }

@@ -51,7 +51,9 @@ def backup(path):
 
                         values["original"] = get(values["original_key"])
                         values["original_key"] = None
-                    records.append({key: encode(value) for key, value in values.items()})
+                    records.append(
+                        {key: encode(value) for key, value in values.items()}
+                    )
                 tables[table.name] = records
     payload = {
         "format": "knowra-backup-v1",

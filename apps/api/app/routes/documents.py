@@ -38,7 +38,10 @@ def integrity(document_id: str, version_id: str, user=Depends(current_user)):
 
     with db() as c:
         permitted_document(c, document_id, user)
-        if not c.execute("SELECT id FROM document_versions WHERE id=? AND document=?", (version_id, document_id)).fetchone():
+        if not c.execute(
+            "SELECT id FROM document_versions WHERE id=? AND document=?",
+            (version_id, document_id),
+        ).fetchone():
             raise HTTPException(404, "Source version not found.")
     return source_integrity(document_id, version_id, user)
 
@@ -171,7 +174,9 @@ def version_detail(document_id: str, version_id: str, user=Depends(current_user)
         }
 
 
-@router.get("/api/v1/documents/{document_id}/versions/{version_id}/pages/{number}/image")
+@router.get(
+    "/api/v1/documents/{document_id}/versions/{version_id}/pages/{number}/image"
+)
 def source_image(
     document_id: str, version_id: str, number: int, user=Depends(current_user)
 ):

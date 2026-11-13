@@ -53,19 +53,37 @@ def validate_runtime():
 def validate_demo():
     problems = []
     public = urlsplit(os.getenv("PUBLIC_URL", ""))
-    if public.scheme != "https" or not public.hostname or public.username or public.path not in ("", "/") or public.query or public.fragment:
+    if (
+        public.scheme != "https"
+        or not public.hostname
+        or public.username
+        or public.path not in ("", "/")
+        or public.query
+        or public.fragment
+    ):
         problems.append("PUBLIC_URL must be an HTTPS origin")
     if os.getenv("COOKIE_SECURE") != "true":
         problems.append("COOKIE_SECURE must be true")
     try:
         url = make_url(os.getenv("DATABASE_URL", ""))
-        if url.get_backend_name() != "postgresql" or not url.password or url.query.get("sslmode") not in ("require", "verify-ca", "verify-full"):
+        if (
+            url.get_backend_name() != "postgresql"
+            or not url.password
+            or url.query.get("sslmode") not in ("require", "verify-ca", "verify-full")
+        ):
             raise ValueError
     except Exception:
-        problems.append("DATABASE_URL must be a dedicated PostgreSQL connection with TLS")
+        problems.append(
+            "DATABASE_URL must be a dedicated PostgreSQL connection with TLS"
+        )
     if not 12 <= len(os.getenv("DEMO_PASSWORD", "")) <= 128:
         problems.append("Set a private DEMO_PASSWORD of 12–128 characters")
-    if os.getenv("EMBEDDING_MODEL", "").strip() or os.getenv("EMBEDDED_WORKER", "true") != "false":
-        problems.append("The lightweight demo requires embeddings and embedded worker disabled")
+    if (
+        os.getenv("EMBEDDING_MODEL", "").strip()
+        or os.getenv("EMBEDDED_WORKER", "true") != "false"
+    ):
+        problems.append(
+            "The lightweight demo requires embeddings and embedded worker disabled"
+        )
     if problems:
         raise RuntimeError("Demo configuration: " + "; ".join(problems))

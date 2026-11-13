@@ -34,7 +34,11 @@ def execute(payload):
         from app.evidence import highlight
 
         pages, quote = payload["pages"], payload["quote"]
-        if not 1 <= number <= len(pages) or len(pages[number - 1]) > 100_000 or len(quote) > 4000:
+        if (
+            not 1 <= number <= len(pages)
+            or len(pages[number - 1]) > 100_000
+            or len(quote) > 4000
+        ):
             raise ValueError("Evidence bounds exceeded")
         return highlight(pages, number, quote, data)
     raise ValueError("Unknown operation")
@@ -50,4 +54,6 @@ if __name__ == "__main__":
     request = sys.stdin.buffer.read(18 * 1024 * 1024 + 1)
     if len(request) > 18 * 1024 * 1024:
         raise ValueError("Request too large")
-    Path(sys.argv[1]).write_text(json.dumps(execute(json.loads(request))), encoding="utf-8")
+    Path(sys.argv[1]).write_text(
+        json.dumps(execute(json.loads(request))), encoding="utf-8"
+    )

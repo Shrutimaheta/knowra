@@ -94,9 +94,7 @@ def parse_file(name, data):
             400, "Supported formats: PDF, PNG, JPEG, WebP, TXT, Markdown, CSV."
         )
     if not "".join(pages).strip() and not name.lower().endswith(".pdf"):
-        raise HTTPException(
-            400, "No readable text found in this document."
-        )
+        raise HTTPException(400, "No readable text found in this document.")
     if sum(map(len, pages)) > 2_000_000:
         raise HTTPException(
             400, "Extracted text exceeds the 2 million character limit."
@@ -297,7 +295,8 @@ def stream_answer(query, sources, history, page_images=None):
         raise provider_error(provider, error.response.status_code) from None
     except (httpx.TimeoutException, httpx.ConnectError):
         logging.getLogger("knowra.generation").warning(
-            "AI provider connection unavailable or timed out: provider=%s", provider.name
+            "AI provider connection unavailable or timed out: provider=%s",
+            provider.name,
         )
         raise HTTPException(
             503, "AI synthesis did not respond in time. Try again later."

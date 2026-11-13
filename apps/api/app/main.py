@@ -61,7 +61,9 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url=None if os.getenv("APP_ENV") in ("production", "demo") else "/docs",
     redoc_url=None,
-    openapi_url=None if os.getenv("APP_ENV") in ("production", "demo") else "/openapi.json",
+    openapi_url=None
+    if os.getenv("APP_ENV") in ("production", "demo")
+    else "/openapi.json",
 )
 
 
@@ -85,9 +87,6 @@ STATIC = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
 
-
-
-
 @app.middleware("http")
 async def protect(request, call_next):
     started = time.monotonic()
@@ -95,7 +94,12 @@ async def protect(request, call_next):
     if demo_enabled() and not demo_permits(request.method, request.url.path):
         from fastapi.responses import JSONResponse
 
-        return JSONResponse(status_code=403, content={"detail": "This workspace has uploads and administration disabled. Use the supplied fictional sources."})
+        return JSONResponse(
+            status_code=403,
+            content={
+                "detail": "This workspace has uploads and administration disabled. Use the supplied fictional sources."
+            },
+        )
     if request.method not in ("GET", "HEAD", "OPTIONS"):
         origin = request.headers.get("origin")
         allowed_origins = {os.getenv("PUBLIC_URL", str(request.base_url)).rstrip("/")}
@@ -153,7 +157,9 @@ async def protect(request, call_next):
         auth_url = urlsplit(os.getenv("NEON_AUTH_BASE_URL", ""))
         if auth_url.scheme == "https" and auth_url.hostname:
             auth_origin = "https://" + auth_url.netloc
-            response.headers["Content-Security-Policy"] += f"; connect-src 'self' {auth_origin}; frame-src {auth_origin}"
+            response.headers["Content-Security-Policy"] += (
+                f"; connect-src 'self' {auth_origin}; frame-src {auth_origin}"
+            )
     if request.url.path == "/docs":
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://fastapi.tiangolo.com; frame-ancestors 'none'"
@@ -181,11 +187,15 @@ def home():
         from fastapi.responses import HTMLResponse
 
         html = (STATIC / "index.html").read_text(encoding="utf-8")
-        html = html.replace('id="auth" class="auth-layout"', 'id="auth" class="auth-layout hidden"')
-        html = html.replace('id="demo-loading" class="loading hidden"', 'id="demo-loading" class="loading"')
+        html = html.replace(
+            'id="auth" class="auth-layout"', 'id="auth" class="auth-layout hidden"'
+        )
+        html = html.replace(
+            'id="demo-loading" class="loading hidden"',
+            'id="demo-loading" class="loading"',
+        )
         return HTMLResponse(html)
     return FileResponse(STATIC / "index.html")
-
 
 
 from app.routes import auth, conversations, documents, workspace  # noqa: E402

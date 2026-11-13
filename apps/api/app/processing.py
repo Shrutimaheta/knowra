@@ -17,16 +17,24 @@ def remote(operation, data, **options):
     try:
         response = httpx.post(
             endpoint + "/process",
-            json={"operation": operation, "data": base64.b64encode(data).decode(), **options},
+            json={
+                "operation": operation,
+                "data": base64.b64encode(data).decode(),
+                **options,
+            },
             timeout=httpx.Timeout(310, connect=5),
             trust_env=False,
         )
         if response.status_code == 422:
-            raise ExtractionError("This document could not be processed. Use a valid, readable file.")
+            raise ExtractionError(
+                "This document could not be processed. Use a valid, readable file."
+            )
         response.raise_for_status()
         return response.json()
     except (httpx.HTTPError, ValueError):
-        raise HTTPException(503, "Document processing is unavailable. Please retry shortly.") from None
+        raise HTTPException(
+            503, "Document processing is unavailable. Please retry shortly."
+        ) from None
 
 
 def validate(filename, data):
@@ -47,7 +55,11 @@ def extract(filename, data, pages):
         return result["pages"], result["layout"]
     from app.extraction import extract_image, extract_pdf
 
-    return extract_pdf(data, pages) if filename.lower().endswith(".pdf") else extract_image(data)
+    return (
+        extract_pdf(data, pages)
+        if filename.lower().endswith(".pdf")
+        else extract_image(data)
+    )
 
 
 def page_image(data, number):
