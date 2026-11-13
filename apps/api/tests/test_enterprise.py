@@ -262,7 +262,7 @@ def test_interrupted_stream_does_not_save_partial_answer(client, monkeypatch):
         yield {"type": "delta", "text": "Partial output"}
         raise HTTPException(502, "Provider interrupted")
 
-    monkeypatch.setattr("app.main.stream_answer", interrupted)
+    monkeypatch.setattr("app.routes.conversations.stream_answer", interrupted)
     response = client.post(
         f"/api/v1/conversations/{conversation}/stream", json={"content": "leave"}
     )
@@ -309,7 +309,7 @@ def test_limits_are_shared_and_quota_is_enforced(client, monkeypatch):
 
 def test_health_migration_and_conversation_delete(client):
     register(client)
-    assert client.get("/api/v1/health/ready").json()["revision"] == "0007"
+    assert client.get("/api/v1/health/ready").json()["revision"] == "0008"
     conversation = client.post("/api/v1/conversations").json()["id"]
     assert client.delete("/api/v1/conversations/" + conversation).status_code == 200
     assert (
@@ -360,7 +360,7 @@ def test_semantic_search_preserves_private_document_boundary(client, monkeypatch
         ]
 
     monkeypatch.setattr("app.worker.encode", vectors)
-    monkeypatch.setattr("app.main.query_vector", lambda query: vectors([query])[0])
+    monkeypatch.setattr("app.routes.conversations.query_vector", lambda query: vectors([query])[0])
     monkeypatch.setattr("app.embeddings.query_vector", lambda query: vectors([query])[0])
     private = upload(client, "Confidential acquisition strategy.", visibility="private")
     upload(client, "Travel reimbursement policy.")

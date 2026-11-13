@@ -74,7 +74,7 @@ def test_image_upload_ocr_search_preview_visual_and_permissions(client, monkeypa
         yield {"type": "delta", "text": "ICMP reports network errors [1]."}
         yield {"type": "usage", "model": "test-vision", "tokens": 1}
 
-    monkeypatch.setattr("app.main.stream_answer", visual_answer)
+    monkeypatch.setattr("app.routes.conversations.stream_answer", visual_answer)
     chat = client.post("/api/v1/conversations").json()["id"]
     response = client.post(
         f"/api/v1/conversations/{chat}/messages",

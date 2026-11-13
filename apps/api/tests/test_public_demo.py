@@ -135,7 +135,7 @@ def test_budget_refuses_generation_before_provider_call_and_keeps_search(client,
     assert client.post(f"/api/v1/conversations/{conversation}/messages", json={"content": "annual leave"}).status_code == 200
     def forbidden(*args, **kwargs):
         raise AssertionError("No provider call is allowed after budget exhaustion")
-    monkeypatch.setattr("app.main.stream_answer", forbidden)
+    monkeypatch.setattr("app.routes.conversations.stream_answer", forbidden)
     response = client.post(f"/api/v1/conversations/{conversation}/messages", json={"content": "annual leave"})
     assert response.status_code == 429
     assert client.post("/api/v1/search", json={"content": "annual leave"}).json()

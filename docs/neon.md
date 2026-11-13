@@ -4,7 +4,7 @@ The application keeps its FastAPI, SQLAlchemy, psycopg and Alembic architecture.
 
 ## Configuration
 
-Install the official Neon CLI, sign in, and initialize your own project using its current official instructions. This repository deliberately excludes the `.neon` account context and all credentials. Inspect `neon.ts` before deploying: it declares Auth, a private assets bucket and the hello Function; AI Gateway is disabled. Confirm available services and costs for your account, and do not enable a paid feature unintentionally.
+Install the official Neon CLI, sign in, and initialize your own project using its current official instructions. This repository deliberately excludes the `.neon` account context and all credentials. Inspect `neon.ts` before deploying: it declares Auth, a private assets bucket and the source-integrity Function (deployed under the key `hello`); AI Gateway is disabled. Confirm available services and costs for your account, and do not enable a paid feature unintentionally.
 
 Use the pooled `DATABASE_URL` for app requests and `DATABASE_URL_UNPOOLED` for migrations. Keep both in private `.env` or host secret settings. The CLI supplies Auth, Function and S3-compatible service endpoints and credentials. Set `AUTH_PROVIDER=neon`, `ORIGINAL_STORAGE=neon`, and `NEON_STORAGE_BUCKET=assets` to opt in. Generate a private `KNOWRA_FUNCTION_SECRET` before deployment. It authenticates the backend's integrity calls and must never appear in browser code.
 

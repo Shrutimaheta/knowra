@@ -47,6 +47,51 @@ def verify_password(password, stored):
         return False
 
 
+# Per-account lockout. Applies to every submitted email, including ones without
+# an account, so lockout responses never reveal whether an email is registered.
+LOGIN_MAX_FAILURES = 5
+LOGIN_WINDOW_SECONDS = 15 * 60
+LOGIN_LOCK_SECONDS = 15 * 60
+LOCKED_MESSAGE = "Too many failed sign-in attempts. Try again in 15 minutes or reset your password."
+
+
+def login_locked(c, email):
+    row = c.execute(
+        "SELECT locked_until FROM login_failures WHERE account=?", (digest(email),)
+    ).fetchone()
+    return bool(row) and row["locked_until"] > time.time()
+
+
+def record_login_failure(c, email):
+    """Count a failure; lock the account once the limit is reached in the window."""
+    account, current = digest(email), time.time()
+    row = c.execute(
+        "SELECT failures,first_failure FROM login_failures WHERE account=?", (account,)
+    ).fetchone()
+    if not row or current - row["first_failure"] > LOGIN_WINDOW_SECONDS:
+        failures, first = 1, current
+    else:
+        failures, first = row["failures"] + 1, row["first_failure"]
+    locked_until = current + LOGIN_LOCK_SECONDS if failures >= LOGIN_MAX_FAILURES else 0
+    if failures >= LOGIN_MAX_FAILURES:
+        # A lock starts a fresh window, so one more miss after expiry re-locks quickly.
+        failures, first = 0, current
+    c.execute("DELETE FROM login_failures WHERE account=?", (account,))
+    c.execute(
+        "INSERT INTO login_failures (account,failures,first_failure,locked_until) VALUES (?,?,?,?)",
+        (account, failures, first, locked_until),
+    )
+    c.execute(
+        "DELETE FROM login_failures WHERE locked_until<? AND first_failure<?",
+        (current, current - LOGIN_WINDOW_SECONDS),
+    )
+    return locked_until > 0
+
+
+def clear_login_failures(c, email):
+    c.execute("DELETE FROM login_failures WHERE account=?", (digest(email),))
+
+
 def current_user(request: Request):
     with db() as c:
         user = c.execute(
@@ -227,6 +272,7 @@ def reset(body: Reset, response: Response):
         user = c.execute(
             "SELECT * FROM users WHERE id=?", (token["user_id"],)
         ).fetchone()
+        clear_login_failures(c, user["email"])
         audit(c, user, "account.password_reset", user["id"])
     response.delete_cookie("knowra_session")
     return {"ok": True}

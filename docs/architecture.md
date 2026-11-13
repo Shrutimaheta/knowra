@@ -34,7 +34,7 @@ flowchart LR
 
 ## Database and upgrades
 
-SQLAlchemy manages transactions and portable parameter binding. Alembic revisions `0001`–`0007` create the baseline, add operational/security tables, and preserve legacy text and citations as immutable versions. Existing unversioned databases are stamped at the compatible baseline and then upgraded. Destructive downgrades are disabled. Back up before deploying migrations. PostgreSQL migration adds pgvector, a full-text GIN index and a cosine HNSW index for 384-dimensional embeddings. Operators need migration privileges to create the extension; the runtime role does not.
+SQLAlchemy manages transactions and portable parameter binding. Alembic revisions `0001`–`0008` create the baseline, add operational/security tables, and preserve legacy text and citations as immutable versions. Existing unversioned databases are stamped at the compatible baseline and then upgraded. Destructive downgrades are disabled. Back up before deploying migrations. PostgreSQL migration adds pgvector, a full-text GIN index and a cosine HNSW index for 384-dimensional embeddings. Operators need migration privileges to create the extension; the runtime role does not.
 
 Original files, pages, checksum and version number live in `document_versions`. Chunks point at an immutable version. Only the document's current ready version enters retrieval. Previous versions remain readable through old citation links. Legacy PDF binaries were never saved by the old application; migration preserves the available extracted page text rather than inventing a replacement PDF.
 
@@ -62,6 +62,8 @@ Model citation indices are validated before save. Prompts instruct the model to 
 
 New passwords use Argon2id; legacy scrypt passwords transparently rehash after successful login. Sessions and one-use invitation/recovery tokens are random and stored only as hashes. Reset and password change revoke sessions. Reset tokens last 30 minutes and invitations 24 hours, and token consumption is transactional. New invitees choose their own password; production disables the old direct account-creation endpoint.
 
+Five failed sign-ins within 15 minutes lock that email for 15 minutes, even for the correct password; a successful sign-in clears the count and a password reset unlocks it. Lockout applies identically to unregistered emails, password checks run against a dummy hash for unknown addresses, and the failure table stores only email hashes. Rate limits use the connecting address; behind Vercel they use Vercel's edge-set `x-vercel-forwarded-for` header, which is trusted only when running on Vercel.
+
 Development mail goes to a private local outbox, never to an unauthenticated token-return API. Production requires SMTP for delivery and has no development outbox fallback. Invitation issuance and mail delivery are synchronous; a production transactional mail outbox would improve delivery reconciliation after a crash between sending mail and committing the transaction.
 
 The API uses server-derived tenant/user scope, parameterized queries, escaped UI text, HttpOnly/SameSite cookies, exact configured-origin checks, shared database rate limits, quotas and CSP. Production requires HTTPS and secure cookies at startup. Interactive Swagger docs are development-only and use their own CDN-compatible CSP; the application itself keeps a strict self-only script policy. Database exception logs hide SQL parameter values. Request logs omit bodies and query strings.
@@ -78,4 +80,4 @@ Conflict reviews are derived from current, permission-checked source versions us
 
 ## Optional managed services
 
-Revision 0007 adds isolated expiring public visitors and persistent question budgets. Revision 0006 adds managed identity bindings and external original-object keys and sizes. Neon storage can hold private originals while metadata stays in SQL. See [neon.md](neon.md) for opt-in configuration and known limits.
+Revision 0008 adds per-account sign-in failure tracking. Revision 0007 adds isolated expiring public visitors and persistent question budgets. Revision 0006 adds managed identity bindings and external original-object keys and sizes. Neon storage can hold private originals while metadata stays in SQL. See [neon.md](neon.md) for opt-in configuration and known limits.
