@@ -11,7 +11,7 @@ ROOT_FILES = {
     ".gitignore", ".gitattributes", ".dockerignore", ".env.example",
     "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "package.json",
     "package-lock.json", "tsconfig.json", "pytest.ini", "ruff.toml",
-    "neon.ts", "hello.ts", "render.yaml", "compose.yaml",
+    "neon.ts", "source-integrity.ts", "render.yaml", "compose.yaml",
     "compose.production.yaml", "compose.operations.yaml",
 }
 PUBLIC_DOCS = {

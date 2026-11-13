@@ -94,7 +94,7 @@ def test_real_scan_ocr_table_search_citation_and_original_permissions(
         yield {"type": "delta", "text": "The ICMP protocol number is 1 [1]."}
         yield {"type": "usage", "model": "test-vision", "tokens": 1}
 
-    monkeypatch.setattr("app.main.stream_answer", visual_answer)
+    monkeypatch.setattr("app.routes.conversations.stream_answer", visual_answer)
     response = client.post(
         f"/api/v1/conversations/{chat}/messages",
         json={

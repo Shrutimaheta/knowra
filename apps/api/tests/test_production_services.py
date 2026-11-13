@@ -50,7 +50,7 @@ def test_scanner_failures_reject_before_parsing(client, monkeypatch, reply, code
     def no_parse(*args):
         raise AssertionError("Rejected bytes must never enter a document parser")
 
-    monkeypatch.setattr("app.main.validate", no_parse)
+    monkeypatch.setattr("app.routes.documents.validate", no_parse)
     response = client.post("/api/v1/documents", files={"file": ("test.txt", b"unsafe content")})
     assert response.status_code == code
     assert client.get("/api/v1/documents").json() == []

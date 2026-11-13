@@ -6,9 +6,10 @@ export default defineConfig({
   // Neon CLI rejects AI Gateway on Free. Preserve direct Gemini generation.
   aiGateway: false,
   functions: {
+    // Key stays "hello": Neon derives NEON_FUNCTION_HELLO_BASE_URL from it.
     hello: {
       name: "Knowra source integrity",
-      source: "./hello.ts",
+      source: "./source-integrity.ts",
       env: { ORIGIN_SECRET: process.env.KNOWRA_FUNCTION_SECRET! },
     },
   },

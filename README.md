@@ -102,7 +102,8 @@ python -m pytest -q
 CI defines SQLite, PostgreSQL/pgvector, container/parser/scanner/backup, and optional semantic-retrieval verification. Local checks do not establish that all hosted CI jobs have passed. Use the Actions results for the published commit as the release evidence.
 
 ```text
-apps/api/app/         FastAPI backend and static frontend
+apps/api/app/         FastAPI app, middleware and static frontend
+apps/api/app/routes/  API routes: auth, documents, conversations, workspace
 apps/api/migrations/  Versioned database migrations
 apps/api/tests/       Application and integration tests
 web/                 Neon browser client bundle source
@@ -111,7 +112,8 @@ infrastructure/      Proxy, backup and monitoring configuration
 docs/                Architecture, deployment and demo guides
 evals/               Fictional retrieval evaluation fixtures
 render.yaml          Free demo deployment blueprint
-neon.ts / hello.ts   Optional Neon services and integrity Function
+neon.ts, source-integrity.ts
+                     Optional Neon services and integrity Function
 ```
 
 ## Deployment and security

@@ -107,7 +107,7 @@ def test_standalone_topic_does_not_inherit_unrelated_chat_history(client, monkey
         queries.append(body.content)
         return []
 
-    monkeypatch.setattr("app.main.search", capture)
+    monkeypatch.setattr("app.routes.conversations.search", capture)
     chat = client.post("/api/v1/conversations").json()["id"]
     client.post(
         f"/api/v1/conversations/{chat}/messages",
@@ -176,7 +176,7 @@ def test_provider_outage_returns_labeled_evidence_instead_of_no_evidence(
     def unavailable(*args):
         raise HTTPException(503, "Provider temporarily unavailable")
 
-    monkeypatch.setattr("app.main.stream_answer", unavailable)
+    monkeypatch.setattr("app.routes.conversations.stream_answer", unavailable)
     chat = client.post("/api/v1/conversations").json()["id"]
     response = client.post(
         f"/api/v1/conversations/{chat}/messages", json={"content": "what is ICMP?"}
@@ -199,7 +199,7 @@ def test_partial_model_output_is_not_replaced_by_excerpt_fallback(client, monkey
         yield {"type": "delta", "text": "Partial generated answer"}
         raise HTTPException(503, "Provider interrupted")
 
-    monkeypatch.setattr("app.main.stream_answer", partial)
+    monkeypatch.setattr("app.routes.conversations.stream_answer", partial)
     chat = client.post("/api/v1/conversations").json()["id"]
     assert (
         client.post(
